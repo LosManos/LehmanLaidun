@@ -1,6 +1,5 @@
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Collections.Generic;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
@@ -8,7 +7,7 @@ using System.Xml.Linq;
 
 namespace LehmanLaidun.FileSystem.Test
 {
-	[TestClass]
+    [TestClass]
 	public class ControlTest
 	{
 		[TestMethod]
@@ -23,8 +22,7 @@ namespace LehmanLaidun.FileSystem.Test
             var mockedFileSystem = new MockFileSystem(new Dictionary<string, MockFileData>());
             paths.ToList().ForEach(p => mockedFileSystem.AddFile(p, new MockFileData("a")));
 
-            var sut = Control.CreateForPath(Path)
-                .Inject(mockedFileSystem);
+            var sut = LogicFactory.CreateForPath(mockedFileSystem, Path);
 
             var res = sut.AsEnumerableFiles();
 
@@ -50,8 +48,7 @@ namespace LehmanLaidun.FileSystem.Test
             var mockedFileSystem = new MockFileSystem(new Dictionary<string, MockFileData>());
             paths.ToList().ForEach(p => mockedFileSystem.AddFile(p, new MockFileData("a")));
 
-            var sut = Control.CreateForPath(Path)
-                .Inject(mockedFileSystem);
+            var sut = LogicFactory.CreateForPath(mockedFileSystem, Path);
 
             //  #   Act.
             var res = sut.AsXDocument();
