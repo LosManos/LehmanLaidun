@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace LehmanLaidun.FileSystem
 {
@@ -23,14 +24,14 @@ namespace LehmanLaidun.FileSystem
         public string Path { get; }
 
         public static Control CreateForPath(string path)
-		{
+        {
             if (string.IsNullOrWhiteSpace(path)) { throw new ArgumentException("A Path is needed.", nameof(path)); }
 
             return new Control(path);
-		}
+        }
 
-		private Control(string path)
-		{
+        private Control(string path)
+        {
             Path = path;
         }
 
@@ -40,20 +41,45 @@ namespace LehmanLaidun.FileSystem
             return this;
         }
 
-		public IEnumerable<FileItem> AsEnumerableFiles()
-		{
-            var ret = new List<FileItem>();
-
-            var directories = FileSystem.Directory.EnumerateDirectories(Path, "*", System.IO.SearchOption.AllDirectories);
-            foreach( var directory in directories)
+        public IEnumerable<FileItem> AsEnumerableFiles()
+        {
+            //  First take care of the files in teh folder asked for.
+            foreach (var file
+                in FileSystem.Directory.EnumerateFiles(Path, "*", System.IO.SearchOption.TopDirectoryOnly))
             {
-                var files = FileSystem.Directory.EnumerateFiles(directory, "*", System.IO.SearchOption.TopDirectoryOnly);
-                foreach( var file in files)
+                yield return FileItem.Create(Path, FileSystem.Path.GetFileName(file));
+            }
+            //  Then recurse the directories.
+            foreach (var directory
+                in FileSystem.Directory.EnumerateDirectories(Path, "*", System.IO.SearchOption.AllDirectories))
+            {
+                foreach (var file
+                    in FileSystem.Directory.EnumerateFiles(directory, "*", System.IO.SearchOption.TopDirectoryOnly))
                 {
-                    ret.Add(FileItem.Create(directory, file));
+                    yield return FileItem.Create(directory, FileSystem.Path.GetFileName(file));
                 }
             }
-            return ret;
-		}
-	}
+        }
+
+        public XDocument AsXDocument()
+        {
+            var doc = new XDocument(new XElement("root", new XAttribute("path", Path)));
+            foreach (var file in AsEnumerableFiles())
+            {
+                //  Remove the first part, the Path.
+                var relPath = file.Path.Remove(0, Path.Length);
+                var directoryNames = relPath.Trim(new[] { FileSystem.Path.DirectorySeparatorChar }).Split(FileSystem.Path.DirectorySeparatorChar);
+                var directoryElement = doc.Root;
+                for (var i = 0; i < directoryNames.Length; ++i)
+                {
+                    var directoryNameList = directoryNames.Take(i + 1); // The first n items.
+
+                    directoryElement = doc.SelectDirectoryElement(directoryNameList) ?? directoryElement.AddDirectoryElement(directoryNameList.Last());
+
+                }
+                directoryElement.AddFileElement(file);
+            }
+            return doc;
+        }
+    }
 }
