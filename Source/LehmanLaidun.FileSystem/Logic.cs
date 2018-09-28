@@ -63,5 +63,63 @@ namespace LehmanLaidun.FileSystem
             }
             return doc;
         }
+
+        public static (bool Result, IEnumerable<Difference> Differences) CompareXml(XDocument xml1, XDocument xml2)
+        {
+            return (false, null);
+        }
+
+        /// <summary>This method sorts the XML tree
+        /// by the name of the elements and then the name of the attributes.
+        /// </summary>
+        /// <param name="xml"></param>
+        /// <returns></returns>
+        public static XDocument SortXml(XDocument xml)
+        {
+            return new XDocument(Sort(xml.Root));
+        }
+
+        /// <summary>This recursive method sorts an xml tree.
+        /// Sorting order is element and attribute names. The order of the attributes is not interesting
+        /// and by that means that an element E with attributes A and B is equal in sort order
+        /// as an element E with attributes B and a.
+        /// The algorithm recurses the tree and creates copies of the elements from furthest way and back to the root.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        private static XElement Sort(XElement element)
+        {
+            // For all the element's children, recursively call Sort or create a shallow copy if there are no children.
+            // In the end we have a copy of the tree we're at.
+            var children =
+                element.Elements()
+                    .Select(e => e.Elements().Any() ?
+                        Sort(e) :
+                        e.ShallowCopy());
+
+            // Copy the incoming element and add the children we have created earlier.
+            return element
+                .ShallowCopy()
+                .AddElements(
+                    children.OrderBy(e => e.Name.LocalName).ThenBy(e => SortableAttributes(e)));
+        }
+
+        /// <summary>This method returns a string representing all attribute names.
+        /// Together with the element name one can then sort the elements on name and attributes.
+        /// 
+        /// NOTE: The implementation is not totally correct. A character that cannot be used in an attribute is used as delimiter
+        /// but that does not work if the attributes has characters sorted both before and after than the delimiter.
+        /// For instance, 0x9, 0xA and 0xD are probably sorted before the delimiter, &gt; ,which is somewhere around 34(decimal).
+        /// Normal letters (>=64dec) are, I guess, sorted after the delimiter.
+        /// <see cref="https://www.w3.org/TR/xml/#charsets"/>
+        /// But for now it works.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        private static string SortableAttributes(XElement element)
+        {
+            var attributes = element.Attributes().OrderBy(a => a.Name.LocalName);
+            return string.Join(">", attributes);
+        }
     }
 }

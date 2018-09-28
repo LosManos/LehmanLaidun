@@ -37,6 +37,18 @@ namespace LehmanLaidun.FileSystem
             return newElement;
         }
 
+        /// <summary>This is an ordinary Add but it also returns itself.
+        /// Handy for chaining calls.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="elements"></param>
+        /// <returns></returns>
+        public static XElement AddElements(this XElement element, IEnumerable<XElement> elements)
+        {
+            element.Add(elements);
+            return element;
+        }
+
         public static XElement AddFileElement(this XElement element, FileItem file)
         {
             var newElement = new XElement("file", new XAttribute("name", file.Name));
@@ -48,6 +60,20 @@ namespace LehmanLaidun.FileSystem
         {
             return doc.XPathSelectElement(XPath(directoryNames));
         }
+
+        /// <summary>This method does a shallow copy, only the element name and the attributes
+        /// of an element.
+        /// The normal copy constructor does a deept copy.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        public static XElement ShallowCopy(this XElement element)
+        {
+            var ret = new XElement(element.Name);
+            ret.Add(element.Attributes());
+            return ret;
+        }
+
 
         private static IEnumerable<string> Join(string item, IEnumerable<string> items)
         {
