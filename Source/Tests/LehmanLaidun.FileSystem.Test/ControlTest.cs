@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
@@ -10,16 +11,81 @@ namespace LehmanLaidun.FileSystem.Test
     [TestClass]
     public class ControlTest
     {
+        public class TestDatum
+        {
+            public string FirstXml { get; }
+            public string SecondXml { get; }
+            public IEnumerable<Difference> Differences { get; }
+            public string Message { get; }
+            public TestDatum(string firstXml, string secondXml, Difference difference, string message)
+                : this(firstXml, secondXml, new[] { difference }, message)
+            {
+            }
+
+            public TestDatum(string firstXml, string secondXml, IEnumerable<Difference> differences, string message)
+            {
+                FirstXml = firstXml;
+                SecondXml = secondXml;
+                Differences = differences;
+                Message = message;
+            }
+        }
+
+        readonly IList<TestDatum> _testData = new List<TestDatum>
+        {
+            new TestDatum(
+                "<root><a/></root>",
+                "<root></root>",
+                new[]{
+                    Difference.Create(new XElement("a"), "/root[not(@*)]/a[not(@*)]", null, null)
+                },
+                "The element should be found only in the first tree."),
+            new TestDatum(
+                "<root><a><b/></a></root>",
+                "<root><a/></root>",
+                Difference.Create(new XElement("b"), "/root[not(@*)]/a[not(@*)]/b[not(@*)]", null, null),
+                "The inner element should be found only in the first tree."),
+            new TestDatum(
+                    "<root><a/></root>",
+                    "<root><a b='c'/></root>",
+                Difference.Create(new XElement("a")  , "/root[not(@*)]/a[not(@*)]", null, null),
+                    "The element without attributes should be found only in the first tree."),
+            new TestDatum(
+                    "<root><a b='c'/></root>",
+                    "<root><a/></root>",
+                Difference.Create(new XElement("a", new XAttribute("b","c"))  , "/root[not(@*)]/a[@b='c']", null, null),
+                    "The element with attributes should be found only in the first tree."),
+            new TestDatum(
+                "<root><a/><b/></root>",
+                "<root></root>",
+                new []{
+                    Difference.Create(new XElement("a")  , "/root[not(@*)]/a[not(@*)]", null, null),
+                    Difference.Create(new XElement("b")  , "/root[not(@*)]/b[not(@*)]", null, null),
+                },
+                "The elements should be found only in the first tree."
+                ),
+
+            new TestDatum(
+                "<root></root>",
+                "<root><a/></root>",
+                new[]{
+                    Difference.Create(null, null, new XElement("a"), "/root[not(@*)]/a[not(@*)]")
+                },
+                "The element should be found only in the second tree."),
+//TODO:Fill out with tests from the other direcxtion.
+        };
+
         [DataTestMethod]
-        [DataRow(@"<root/>", @"<root/>")]
-        [DataRow(@"<root/>", @"<root><root/>")]
+        [DataRow(@"<root/>", @"<root/>", "A simple root should be equal to itself.")]
+        [DataRow(@"<root/>", @"<root></root>", "Elements can be both simple and complex. (what is it called?)")]
         [DataRow(@"
 <root>
     <directory/>
 </root>", @"
 <root>
     <directory></directory>
-</root>"
+</root>",
+            "Sub-root element can be both simple and complex. (what is it called?)"
             )]
         [DataRow(@"
 <root>
@@ -29,30 +95,77 @@ namespace LehmanLaidun.FileSystem.Test
 <root>
     <b/>
     <a/>
-</root>"
+</root>",
+            "The ordering of the elements does not care."
             )]
         [DataRow(@"
 <root>
-    <directory name='a' suffix='b'/>
+    <a b='c' d='e'/>
 </root>", @"
 <root>
-    <directory suffix='b' name='a'/>
-</root>"
+    <a d='e' b='c'/>
+</root>",
+            "The ordering of the attributes does note care."
             )]
-        public void CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucure(string xml1, string xml2)
+        [DataRow(@"
+<root>
+    <a/>
+    <b c='d' e='f'/>
+</root>", @"
+<root>
+    <b e='f' c='d'/>
+    <a/>
+</root>",
+            "Neither the ordering of the elements nore the attributes care."
+            )]
+        [DataRow(@"
+<root>
+    <a>
+        <b/>
+    </a>
+    <c>
+        <d/>
+    </c>
+</root>", @"
+<root>
+    <c>
+        <d/>
+    </c>
+    <a>
+        <b/>
+    </a>
+</root>",
+            "The ordering of sub elements does not care.")]
+        public void CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucure(string xml1, string xml2, string message)
         {
             //  #   Act.
             var res = Logic.CompareXml(XDocument.Parse(xml1), XDocument.Parse(xml2));
 
             //  #   Assert.
-            res.Result.Should().BeTrue("The XMLs are of equal strucure.");
+            res.Result.Should().BeTrue("The XMLs are of equal strucure." + message);
             res.Differences.Should().BeEmpty();
         }
 
-        [DataTestMethod]
+        //        [DataTestMethod]
+        [TestMethod]
         public void CanCompareXml_ReturnNotEqualAndDIfferences()
         {
+            foreach (var testDatum in _testData)
+            {
+                //  #   Act.
+                var res = Logic.CompareXml(XDocument.Parse(testDatum.FirstXml), XDocument.Parse(testDatum.SecondXml));
+
+                //  #   Assert.
+                res.Result.Should().BeFalse("The comparision should have failed." + testDatum.Message);
+                Assert_Differences(res.Differences, testDatum);
+
+            }
             Assert.Fail("TBA");
+        }
+
+        public class TempErrorRow
+        {
+            public string Messsage { get; set; }
         }
 
         [TestMethod]
@@ -182,5 +295,45 @@ namespace LehmanLaidun.FileSystem.Test
             //  #   Assert.
             res.Should().BeEquivalentTo(XDocument.Parse(expectedResult), message);
         }
+
+        #region Helper methods.
+
+        private static void Assert_Differences(IEnumerable<Difference> actualDifferences, TestDatum expectedTestDatum)
+        {
+            foreach (var diff in actualDifferences)
+            {
+                var matchingDifference = expectedTestDatum.Differences.SingleOrDefault(d =>
+                   diff.FirstElement?.ToString() == d.FirstElement?.ToString() &&
+                   diff.FirstXPath == d.FirstXPath &&
+                   diff.SecondElement?.ToString() == d.SecondElement?.ToString() &&
+                   diff.SecondXPath == d.SecondXPath);
+                if (matchingDifference == null)
+                {
+                    Assert.Fail(
+                        "Expected Difference was not found." + Environment.NewLine +
+                        expectedTestDatum.Message + Environment.NewLine + Environment.NewLine +
+                        $"Indata:{Environment.NewLine}" +
+                        $"First Xml:{expectedTestDatum.FirstXml}{Environment.NewLine}" +
+                        $"Second Xml:{expectedTestDatum.SecondXml}{Environment.NewLine}" +
+                        $"{Environment.NewLine}" +
+                        $"All expected differences:{Environment.NewLine}" +
+                        expectedTestDatum.Differences.Select(d =>
+                            $"First Element:{d.FirstElement}{Environment.NewLine}" +
+                            $"First XPath: {d.FirstXPath}{Environment.NewLine}" +
+                            $"Second Element:{d.SecondElement}{Environment.NewLine}" +
+                            $"Second XPath:{d.SecondXPath}{Environment.NewLine}"
+                        ).StringJoin(Environment.NewLine) +
+                        $"{Environment.NewLine}" +
+                        $"Actual outcome:{Environment.NewLine}" +
+                        $"First Element:{diff.FirstElement}{Environment.NewLine}" +
+                        $"First XPath: {diff.FirstXPath}{Environment.NewLine}" +
+                        $"Second Element:{diff.SecondElement}{Environment.NewLine}" +
+                        $"Second XPath:{diff.SecondXPath}{Environment.NewLine}"
+                    );
+                }
+            }
+        }
+
+        #endregion
     }
 }

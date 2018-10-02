@@ -56,6 +56,18 @@ namespace LehmanLaidun.FileSystem
             return newElement;
         }
 
+        public static IEnumerable<XElement> Parents(this XElement element)
+        {
+            var ret = new List<XElement> { element };
+            var e = element;
+            while( e.Parent != null)
+            {
+                e = e.Parent;
+                ret.Add(e);
+            }
+            return ret;
+        }
+
         public static XElement SelectDirectoryElement(this XDocument doc, IEnumerable<string> directoryNames)
         {
             return doc.XPathSelectElement(XPath(directoryNames));

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Xml.Linq;
+using System.Xml.XPath;
 
 namespace LehmanLaidun.FileSystem
 {
@@ -66,7 +67,93 @@ namespace LehmanLaidun.FileSystem
 
         public static (bool Result, IEnumerable<Difference> Differences) CompareXml(XDocument xml1, XDocument xml2)
         {
-            return (false, null);
+            var result = Compare(xml1.Root, xml2.Root, 0);
+            return (result.Any() == false, result);
+        }
+
+        private static IEnumerable<Difference> Compare(XElement firstElement, XElement secondElement, int rowNum)
+        {
+            var diffs = new List<Difference>();
+
+            var firstXPath = GetXPathOf(firstElement);
+            var existingElements = secondElement.Document.XPathSelectElements(firstXPath);
+            if( existingElements.Any() == false)
+            {
+                diffs.Add(Difference.Create(firstElement.ShallowCopy(), firstXPath, null, null));
+            }else if( existingElements.Count() == 1)
+            {
+                // OK.
+            }
+            else
+            {
+                diffs.Add(Difference.Create(firstElement, secondElement, existingElements.Count()));
+            }
+            foreach( var child in firstElement.Elements())
+            {
+                diffs.AddRange(Compare(child, secondElement, 0));
+            }
+            return diffs;
+        }
+
+        private static string GetXPathOf(XElement element)
+        {
+            var elementPath = 
+                "/" +
+                element
+                    .Parents()
+                    .Reverse()
+                    .Select(e => e.Name.LocalName + GetXPathOf(e.Attributes()))
+                    .StringJoin("/");
+            return elementPath;
+        }
+
+        private static string GetXPathOf(IEnumerable<XAttribute> attributes)
+        {
+            return 
+                "[" +
+                (attributes.Any() ?
+                    // TODO: Escape the values.
+                    attributes
+                    .Select(a => $"@{a.Name}='{a.Value}'")
+                    .StringJoin(" and ") :
+
+                    // TODO: We might have a problem if the attribute is without value, 
+                    // like <a b/> instead of <a b='c'/>.
+                    //https://stackoverflow.com/questions/1323755/xpath-how-to-select-nodes-which-have-no-attributes
+                    "not(@*)" 
+                )+
+                "]";
+
+        }
+
+        private static Difference AreEqual(XElement element1, XElement element2)
+        {
+            var difference = ElementsAreEqual(element1, element2) ?
+                null :
+                Difference.Create(element1.ShallowCopy(), GetXPathOf(element1) , element2.ShallowCopy(), GetXPathOf(element2));
+            return difference;
+        }
+
+        private static bool ElementsAreEqual(XElement element1, XElement element2)
+        {
+            return ElementNamesAreEqual(element1, element2) &&
+                ElementAttributesAreEqual(element1, element2);
+        }
+
+        private static bool ElementAttributesAreEqual(XElement element1, XElement element2)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static bool ElementNamesAreEqual(XElement element1, XElement element2)
+        {
+            return element1.Name == element2.Name;
+        }
+
+        private static Difference AreEqual(IEnumerable<XAttribute> attributes1, IEnumerable<XAttribute> attributes2)
+        {
+            // TODO: Implement.
+            return null;
         }
 
         /// <summary>This method sorts the XML tree
