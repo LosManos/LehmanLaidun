@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Xml.Linq;
+using static LehmanLaidun.FileSystem.Difference;
 
 namespace LehmanLaidun.FileSystem.Test
 {
@@ -17,11 +18,14 @@ namespace LehmanLaidun.FileSystem.Test
             public string SecondXml { get; }
             public IEnumerable<Difference> Differences { get; }
             public string Message { get; }
+
+            [Obsolete("Replace with the one taking [message] as first argument", false)]
             public TestDatum(string firstXml, string secondXml, Difference difference, string message)
                 : this(firstXml, secondXml, new[] { difference }, message)
             {
             }
 
+            [Obsolete("Replace with the one taking [message] as first argument", false)]
             public TestDatum(string firstXml, string secondXml, IEnumerable<Difference> differences, string message)
             {
                 FirstXml = firstXml;
@@ -29,58 +33,97 @@ namespace LehmanLaidun.FileSystem.Test
                 Differences = differences;
                 Message = message;
             }
+
+            public TestDatum(
+                string message,
+                string firstXml,
+                string secondXml,
+                params Difference[] differences)
+            {
+                Message = message;
+                FirstXml = firstXml;
+                SecondXml = secondXml;
+                Differences = differences;
+            }
         }
 
-        readonly IList<TestDatum> _testData = new List<TestDatum>
+        IEnumerable<TestDatum> _canCompareXml_ReturnNotEqualAndDIfferences_TestData
         {
-            new TestDatum(
-                "<root><a/></root>",
-                "<root></root>",
-                new[]{
-                    Difference.Create(new XElement("a"), "/root[not(@*)]/a[not(@*)]", null, null)
-                },
-                "The element should be found only in the first tree."),
-            new TestDatum(
-                "<root><a><b/></a></root>",
-                "<root><a/></root>",
-                Difference.Create(new XElement("b"), "/root[not(@*)]/a[not(@*)]/b[not(@*)]", null, null),
-                "The inner element should be found only in the first tree."),
-            new TestDatum(
+            get
+            {
+                // Indata with stuff found only in the *first* tree.
+                //
+                yield return new TestDatum(
+                    "The element should be found only in the first tree.", 
                     "<root><a/></root>",
-                    "<root><a b='c'/></root>",
-                Difference.Create(new XElement("a")  , "/root[not(@*)]/a[not(@*)]", null, null),
-                    "The element without attributes should be found only in the first tree."),
-            new TestDatum(
+                    "<root></root>",
+                    Difference.Create(new XElement("a"), "/root[not(@*)]/a[not(@*)]", FoundOnlyIn.First)
+                );
+                yield return new TestDatum(
+                    "The inner element should be found only in the first tree.",
+                    "<root><a><b/></a></root>",
+                    "<root><a/></root>",
+                    Difference.Create(new XElement("b"), "/root[not(@*)]/a[not(@*)]/b[not(@*)]",FoundOnlyIn.First)
+                );
+                yield return new TestDatum(
+                    "Element with attributes differs from one without. The attributes are in the first tree.",
                     "<root><a b='c'/></root>",
                     "<root><a/></root>",
-                Difference.Create(new XElement("a", new XAttribute("b","c"))  , "/root[not(@*)]/a[@b='c']", null, null),
-                    "The element with attributes should be found only in the first tree."),
-            new TestDatum(
-                "<root><a/><b/></root>",
-                "<root></root>",
-                new []{
-                    Difference.Create(new XElement("a")  , "/root[not(@*)]/a[not(@*)]", null, null),
-                    Difference.Create(new XElement("b")  , "/root[not(@*)]/b[not(@*)]", null, null),
-                },
-                "The elements should be found only in the first tree."
-                ),
+                    Difference.Create(new XElement("a", new XAttribute("b", "c")), "/root[not(@*)]/a[@b='c']", FoundOnlyIn.First),
+                    Difference.Create(new XElement("a"), "/root[not(@*)]/a[not(@*)]", FoundOnlyIn.Second)
+                );
+                yield return new TestDatum(
+                    "The sequence elements should be found only in the first tree.",
+                    "<root><a/><b/></root>",
+                    "<root></root>",
+                        Difference.Create(new XElement("a")  , "/root[not(@*)]/a[not(@*)]", FoundOnlyIn.First),
+                        Difference.Create(new XElement("b")  , "/root[not(@*)]/b[not(@*)]", FoundOnlyIn.First)
+                );
 
-            new TestDatum(
-                "<root></root>",
-                "<root><a/></root>",
-                new[]{
-                    Difference.Create(null, null, new XElement("a"), "/root[not(@*)]/a[not(@*)]")
-                },
-                "The element should be found only in the second tree."),
-//TODO:Fill out with tests from the other direcxtion.
-        };
+                //  Testdata with stuff found only in the *second* tree.
+                //
+                yield return new TestDatum(
+                    "The element should be found only in the second tree.",
+                    "<root></root>",
+                    "<root><a/></root>",
+                    Difference.Create(new XElement("a"), "/root[not(@*)]/a[not(@*)]", FoundOnlyIn.Second)
+                );
+                yield return new TestDatum(
+                    "The inner element should be found only in the second tree.",
+                    "<root><a/></root>",
+                    "<root><a><b/></a></root>",
+                    Difference.Create(new XElement("b"), "/root[not(@*)]/a[not(@*)]/b[not(@*)]", FoundOnlyIn.Second)
+                    );
+                yield return new TestDatum(
+                    "The element with attributes should be found only in the second tree.",
+                    "<root><a/></root>",
+                    "<root><a b='c'/></root>",
+                    Difference.Create(new XElement("a"), "/root[not(@*)]/a[not(@*)]", FoundOnlyIn.First),
+                    Difference.Create(new XElement("a", new XAttribute("b", "c")), "/root[not(@*)]/a[@b='c']", FoundOnlyIn.Second)
+                );
+                yield return new TestDatum(
+                    "The elements should be found only in the second tree.",
+                    "<root></root>",
+                    "<root><a/><b/></root>",
+                    Difference.Create(new XElement("a")  , "/root[not(@*)]/a[not(@*)]", FoundOnlyIn.Second),
+                    Difference.Create(new XElement("b")  , "/root[not(@*)]/b[not(@*)]", FoundOnlyIn.Second)
+                );
+                yield return new TestDatum(
+                    "Elements with only attributes differing should be found.",
+                    "<root><a b='c'/></root>",
+                    "<root><a d='e'/></root>",
+                    Difference.Create(new XElement("a", new XAttribute("b", "c")), "/root[not(@*)]/a[@b='c']", FoundOnlyIn.First),
+                    Difference.Create(new XElement("a", new XAttribute("d", "e")), "/root[not(@*)]/a[@d='e']", FoundOnlyIn.Second)
+                );
+            }
+        }
 
         [DataTestMethod]
         [DataRow(@"<root/>", @"<root/>", "A simple root should be equal to itself.")]
         [DataRow(@"<root/>", @"<root></root>", "Elements can be both simple and complex. (what is it called?)")]
         [DataRow(@"
 <root>
-    <directory/>
+    <directory/>;
 </root>", @"
 <root>
     <directory></directory>
@@ -146,11 +189,10 @@ namespace LehmanLaidun.FileSystem.Test
             res.Differences.Should().BeEmpty();
         }
 
-        //        [DataTestMethod]
         [TestMethod]
         public void CanCompareXml_ReturnNotEqualAndDIfferences()
         {
-            foreach (var testDatum in _testData)
+            foreach (var testDatum in _canCompareXml_ReturnNotEqualAndDIfferences_TestData)
             {
                 //  #   Act.
                 var res = Logic.CompareXml(XDocument.Parse(testDatum.FirstXml), XDocument.Parse(testDatum.SecondXml));
@@ -160,7 +202,6 @@ namespace LehmanLaidun.FileSystem.Test
                 Assert_Differences(res.Differences, testDatum);
 
             }
-            Assert.Fail("TBA");
         }
 
         public class TempErrorRow

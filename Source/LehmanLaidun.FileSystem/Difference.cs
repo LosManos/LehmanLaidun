@@ -1,24 +1,31 @@
-﻿using System;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("LehmanLaidun.FileSystem.Test")]
 
 namespace LehmanLaidun.FileSystem
 {
     public class Difference
     {
+        public enum FoundOnlyIn
+        {
+            First,
+            Second
+        }
+
         public XElement FirstElement { get; private set; }
         public string FirstXPath { get; }
         public XElement SecondElement { get; private set; }
         public string SecondXPath { get; }
 
-        // TODO:Make internal.
-        public static Difference Create(XElement firstElement, string firstXPath, XElement secondElement, string secondXPath)
+        internal static Difference Create(XElement element, string xpath, FoundOnlyIn foundOnlyIn)
         {
-            return new Difference(firstElement, firstXPath, secondElement, secondXPath);
-        }
-
-        internal static Difference Create(XElement element1, XElement element2, int count)
-        {
-            throw new NotImplementedException();
+            if( foundOnlyIn == FoundOnlyIn.First)
+            {
+                return new Difference(element, xpath, null, null); 
+            }
+            else
+            {
+                return new Difference(null, null, element, xpath);
+            }
         }
 
         private Difference(XElement firstElement, string firstXPath, XElement secondElement, string secondXPath)
