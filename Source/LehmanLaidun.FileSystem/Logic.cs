@@ -13,21 +13,35 @@ namespace LehmanLaidun.FileSystem
         private IFileSystem _fileSystem;
 
         public string Path { get; }
-
+        
+        /// <summary>This static constructor is the prefered.
+        /// </summary>
+        /// <param name="fileSystem"></param>
+        /// <param name="path"></param>
+        /// <returns></returns>
         internal static Logic Create(IFileSystem fileSystem, string path)
         {
             return new Logic(fileSystem, path);
         }
 
+        /// <summary>This constructor takes all parameters needed to fully populate the object.
+        /// </summary>
+        /// <param name="fileSystem"></param>
+        /// <param name="path"></param>
         private Logic(IFileSystem fileSystem, string path)
         {
             _fileSystem = fileSystem;
             Path = path;
         }
 
+        /// <summary>This method returns the file system's files as a list.
+        /// The algorithm is depth first.
+        /// The list is yielded, so <see cref="FileItem"/>s are returned continuously.
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<FileItem> AsEnumerableFiles()
         {
-            //  First take care of the files in teh folder asked for.
+            //  First take care of the files in the folder asked for.
             foreach (var file
                 in _fileSystem.Directory.EnumerateFiles(Path, "*", System.IO.SearchOption.TopDirectoryOnly))
             {
@@ -44,7 +58,10 @@ namespace LehmanLaidun.FileSystem
                 }
             }
         }
-
+    
+        /// <summary>This method returns the file system's files as an XML.
+        /// </summary>
+        /// <returns></returns>
         public XDocument AsXDocument()
         {
             var doc = new XDocument(new XElement("root", new XAttribute("path", Path)));
@@ -66,6 +83,16 @@ namespace LehmanLaidun.FileSystem
             return doc;
         }
 
+        /// <summary>This method returns the difference between two XMLs from <see cref="AsXDocument"/>.
+        /// <code>
+        /// var myMusic = Logic.Create( @"C:\MyMusic" ).AsXDocument();
+        /// var theirMusic = Logic.Create( "E:\" );
+        /// var difference = Logic.CompareXml( myMusic, theirMusic );
+        /// </code>
+        /// </summary>
+        /// <param name="xml1"></param>
+        /// <param name="xml2"></param>
+        /// <returns></returns>
         public static (bool Result, IEnumerable<Difference> Differences) CompareXml(XDocument xml1, XDocument xml2)
         {
             var firstResult = Compare(xml1.Root, xml2.Root, 0, FoundOnlyIn.First);
@@ -120,15 +147,7 @@ namespace LehmanLaidun.FileSystem
                 "]";
 
         }
-
-        //private static Difference AreEqual(XElement element1, XElement element2)
-        //{
-        //    var difference = ElementsAreEqual(element1, element2) ?
-        //        null :
-        //        Difference.Create(element1.ShallowCopy(), GetXPathOf(element1) , element2.ShallowCopy(), GetXPathOf(element2));
-        //    return difference;
-        //}
-
+        
         private static bool ElementsAreEqual(XElement element1, XElement element2)
         {
             return ElementNamesAreEqual(element1, element2) &&
@@ -143,16 +162,6 @@ namespace LehmanLaidun.FileSystem
         private static bool ElementNamesAreEqual(XElement element1, XElement element2)
         {
             return element1.Name == element2.Name;
-        }
-
-        /// <summary>This method sorts the XML tree
-        /// by the name of the elements and then the name of the attributes.
-        /// </summary>
-        /// <param name="xml"></param>
-        /// <returns></returns>
-        public static XDocument SortXml(XDocument xml)
-        {
-            return new XDocument(Sort(xml.Root));
         }
 
         /// <summary>This recursive method sorts an xml tree.
@@ -180,10 +189,20 @@ namespace LehmanLaidun.FileSystem
                     children.OrderBy(e => e.Name.LocalName).ThenBy(e => SortableAttributes(e)));
         }
 
+        /// <summary>This method sorts the XML tree
+        /// by the name of the elements and then the name of the attributes.
+        /// </summary>
+        /// <param name="xml"></param>
+        /// <returns></returns>
+        private static XDocument SortXml(XDocument xml)
+        {
+            return new XDocument(Sort(xml.Root));
+        }
+
         /// <summary>This method returns a string representing all attribute names.
         /// Together with the element name one can then sort the elements on name and attributes.
         /// 
-        /// NOTE: The implementation is not totally correct. A character that cannot be used in an attribute is used as delimiter
+        /// NOTE: The implementation is not totally correct. A character that cannot be used as an attribute is used as delimiter
         /// but that does not work if the attributes has characters sorted both before and after than the delimiter.
         /// For instance, 0x9, 0xA and 0xD are probably sorted before the delimiter, &gt; ,which is somewhere around 34(decimal).
         /// Normal letters (>=64dec) are, I guess, sorted after the delimiter.
@@ -197,5 +216,18 @@ namespace LehmanLaidun.FileSystem
             var attributes = element.Attributes().OrderBy(a => a.Name.LocalName);
             return string.Join(">", attributes);
         }
+
+        #region Helper methods for making unit testing possible.
+
+        /// <summary>This method is intended to be used by unit tests only.
+        /// </summary>
+        /// <param name="xml"></param>
+        /// <returns></returns>
+        internal static XDocument UT_SortXml(XDocument xml)
+        {
+            return SortXml(xml);
+        }
+
+        #endregion
     }
 }

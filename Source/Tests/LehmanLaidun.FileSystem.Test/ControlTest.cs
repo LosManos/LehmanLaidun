@@ -331,7 +331,7 @@ namespace LehmanLaidun.FileSystem.Test
         public void CanSortXml(string source, string expectedResult, string message)
         {
             //  #   Act.
-            var res = Logic.SortXml(XDocument.Parse(source));
+            var res = Logic.UT_SortXml(XDocument.Parse(source));
 
             //  #   Assert.
             res.Should().BeEquivalentTo(XDocument.Parse(expectedResult), message);
