@@ -120,6 +120,7 @@ namespace LehmanLaidun.FileSystem.Test
 
         [DataTestMethod]
         [DataRow(@"<root/>", @"<root/>", "A simple root should be equal to itself.")]
+        [DataRow(@"<root a='b'/>", @"<root/>", "The attributes of the root does not matter.")]
         [DataRow(@"<root/>", @"<root></root>", "Elements can be both simple and complex. (what is it called?)")]
         [DataRow(@"
 <root>

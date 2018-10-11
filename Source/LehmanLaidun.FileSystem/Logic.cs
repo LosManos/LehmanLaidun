@@ -101,6 +101,8 @@ namespace LehmanLaidun.FileSystem
             return (result.Any() == false, result);
         }
 
+        #region Private helper methods.
+
         private static IEnumerable<Difference> Compare(XElement firstElement, XElement secondElement, int rowNum, FoundOnlyIn foundOnlyIn)
         {
             var diffs = new List<Difference>();
@@ -216,6 +218,8 @@ namespace LehmanLaidun.FileSystem
             var attributes = element.Attributes().OrderBy(a => a.Name.LocalName);
             return string.Join(">", attributes);
         }
+
+        #endregion
 
         #region Helper methods for making unit testing possible.
 

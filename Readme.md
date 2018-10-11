@@ -1,5 +1,5 @@
 # Readme for LehmanLaidun
 
-var x = LehmanLaidun.Logic.CreateForPath(D:\);
+var x = LehmanLaidun.FileSystem.LogicFactory.CreateForPath(D:\);
 var xml = x.AsTree();
 var 
