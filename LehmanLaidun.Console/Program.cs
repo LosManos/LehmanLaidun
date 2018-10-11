@@ -56,10 +56,13 @@ namespace LehmanLaidun.Console
         {
             foreach ( var d in diff.Differences)
             {
-                var message = $"{d.FirstXPath}\t{d.SecondXPath}";
-                C.WriteLine(message);
-                //message = $"{d.SecondXPath}";
-                //C.WriteLine(message);
+                if( d.FirstXPath != null)
+                {
+                    C.WriteLine($"Found ony in first:{d.FirstXPath}.");
+                }
+                if( d.SecondXPath != null ){
+                    C.WriteLine($"{d.FirstXPath}\t{d.SecondXPath}");
+                }
             }
         }
 
