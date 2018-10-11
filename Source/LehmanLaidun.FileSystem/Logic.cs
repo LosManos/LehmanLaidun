@@ -108,11 +108,12 @@ namespace LehmanLaidun.FileSystem
             var diffs = new List<Difference>();
 
             var firstXPath = GetXPathOf(firstElement);
-            var existingElements = secondElement.Document.XPathSelectElements(firstXPath);
-            if( existingElements.Any() == false)
+            var existingElementsInSecond = secondElement.Document.XPathSelectElements(firstXPath);
+            if( existingElementsInSecond.Any() == false)
             {
                 diffs.Add(Difference.Create(firstElement.ShallowCopy(), firstXPath, foundOnlyIn));
-            }else if( existingElements.Count() == 1)
+            }
+            else if( existingElementsInSecond.Count() == 1)
             {
                 // OK.
             }
@@ -123,18 +124,37 @@ namespace LehmanLaidun.FileSystem
             return diffs;
         }
 
+        /// <summary>This method returns the xpath with element names and attributes for an element.
+        /// But! the root's part of the xpath is without attributes.
+        /// <code>
+        /// &lt;root path='c:\'&gt;
+    	///     &lt;folder path = 'c:\documents\'/&gt;
+        /// &lt;/ root &gt;
+        /// returns
+        /// "root/folder[@path = 'c:\documents\']"
+        /// </code>
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
         private static string GetXPathOf(XElement element)
         {
+            var root = element.Parents().Last();
             var elementPath = 
                 "/" +
                 element
                     .Parents()
                     .Reverse()
-                    .Select(e => e.Name.LocalName + GetXPathOf(e.Attributes()))
+                    .Select(e => e.Name.LocalName + (e==root ? string.Empty: GetXPathOf(e.Attributes())))
                     .StringJoin("/");
             return elementPath;
         }
 
+        /// <summary>This method returns the attributes as "an xpath string"
+        /// Attributes like a='b' c='d' returns "[@a='b' and @c='d']".
+        /// Note that the variable names anv valies are not escaped properlty.
+        /// </summary>
+        /// <param name="attributes"></param>
+        /// <returns></returns>
         private static string GetXPathOf(IEnumerable<XAttribute> attributes)
         {
             return 
@@ -149,13 +169,13 @@ namespace LehmanLaidun.FileSystem
                 "]";
 
         }
-        
+
         private static bool ElementsAreEqual(XElement element1, XElement element2)
         {
             return ElementNamesAreEqual(element1, element2) &&
                 ElementAttributesAreEqual(element1, element2);
         }
-
+        
         private static bool ElementAttributesAreEqual(XElement element1, XElement element2)
         {
             throw new NotImplementedException();

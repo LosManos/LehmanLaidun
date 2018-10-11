@@ -57,27 +57,27 @@ namespace LehmanLaidun.FileSystem.Test
                     "The element should be found only in the first tree.", 
                     "<root><a/></root>",
                     "<root></root>",
-                    Difference.Create(new XElement("a"), "/root[not(@*)]/a[not(@*)]", FoundOnlyIn.First)
+                    Difference.Create(new XElement("a"), "/root/a[not(@*)]", FoundOnlyIn.First)
                 );
                 yield return new TestDatum(
                     "The inner element should be found only in the first tree.",
                     "<root><a><b/></a></root>",
                     "<root><a/></root>",
-                    Difference.Create(new XElement("b"), "/root[not(@*)]/a[not(@*)]/b[not(@*)]",FoundOnlyIn.First)
+                    Difference.Create(new XElement("b"), "/root/a[not(@*)]/b[not(@*)]",FoundOnlyIn.First)
                 );
                 yield return new TestDatum(
                     "Element with attributes differs from one without. The attributes are in the first tree.",
                     "<root><a b='c'/></root>",
                     "<root><a/></root>",
-                    Difference.Create(new XElement("a", new XAttribute("b", "c")), "/root[not(@*)]/a[@b='c']", FoundOnlyIn.First),
-                    Difference.Create(new XElement("a"), "/root[not(@*)]/a[not(@*)]", FoundOnlyIn.Second)
+                    Difference.Create(new XElement("a", new XAttribute("b", "c")), "/root/a[@b='c']", FoundOnlyIn.First),
+                    Difference.Create(new XElement("a"), "/root/a[not(@*)]", FoundOnlyIn.Second)
                 );
                 yield return new TestDatum(
                     "The sequence elements should be found only in the first tree.",
                     "<root><a/><b/></root>",
                     "<root></root>",
-                        Difference.Create(new XElement("a")  , "/root[not(@*)]/a[not(@*)]", FoundOnlyIn.First),
-                        Difference.Create(new XElement("b")  , "/root[not(@*)]/b[not(@*)]", FoundOnlyIn.First)
+                        Difference.Create(new XElement("a")  , "/root/a[not(@*)]", FoundOnlyIn.First),
+                        Difference.Create(new XElement("b")  , "/root/b[not(@*)]", FoundOnlyIn.First)
                 );
 
                 //  Testdata with stuff found only in the *second* tree.
@@ -86,34 +86,34 @@ namespace LehmanLaidun.FileSystem.Test
                     "The element should be found only in the second tree.",
                     "<root></root>",
                     "<root><a/></root>",
-                    Difference.Create(new XElement("a"), "/root[not(@*)]/a[not(@*)]", FoundOnlyIn.Second)
+                    Difference.Create(new XElement("a"), "/root/a[not(@*)]", FoundOnlyIn.Second)
                 );
                 yield return new TestDatum(
                     "The inner element should be found only in the second tree.",
                     "<root><a/></root>",
                     "<root><a><b/></a></root>",
-                    Difference.Create(new XElement("b"), "/root[not(@*)]/a[not(@*)]/b[not(@*)]", FoundOnlyIn.Second)
+                    Difference.Create(new XElement("b"), "/root/a[not(@*)]/b[not(@*)]", FoundOnlyIn.Second)
                     );
                 yield return new TestDatum(
                     "The element with attributes should be found only in the second tree.",
                     "<root><a/></root>",
                     "<root><a b='c'/></root>",
-                    Difference.Create(new XElement("a"), "/root[not(@*)]/a[not(@*)]", FoundOnlyIn.First),
-                    Difference.Create(new XElement("a", new XAttribute("b", "c")), "/root[not(@*)]/a[@b='c']", FoundOnlyIn.Second)
+                    Difference.Create(new XElement("a"), "/root/a[not(@*)]", FoundOnlyIn.First),
+                    Difference.Create(new XElement("a", new XAttribute("b", "c")), "/root/a[@b='c']", FoundOnlyIn.Second)
                 );
                 yield return new TestDatum(
                     "The elements should be found only in the second tree.",
                     "<root></root>",
                     "<root><a/><b/></root>",
-                    Difference.Create(new XElement("a")  , "/root[not(@*)]/a[not(@*)]", FoundOnlyIn.Second),
-                    Difference.Create(new XElement("b")  , "/root[not(@*)]/b[not(@*)]", FoundOnlyIn.Second)
+                    Difference.Create(new XElement("a")  , "/root/a[not(@*)]", FoundOnlyIn.Second),
+                    Difference.Create(new XElement("b")  , "/root/b[not(@*)]", FoundOnlyIn.Second)
                 );
                 yield return new TestDatum(
                     "Elements with only attributes differing should be found.",
                     "<root><a b='c'/></root>",
                     "<root><a d='e'/></root>",
-                    Difference.Create(new XElement("a", new XAttribute("b", "c")), "/root[not(@*)]/a[@b='c']", FoundOnlyIn.First),
-                    Difference.Create(new XElement("a", new XAttribute("d", "e")), "/root[not(@*)]/a[@d='e']", FoundOnlyIn.Second)
+                    Difference.Create(new XElement("a", new XAttribute("b", "c")), "/root/a[@b='c']", FoundOnlyIn.First),
+                    Difference.Create(new XElement("a", new XAttribute("d", "e")), "/root/a[@d='e']", FoundOnlyIn.Second)
                 );
             }
         }
