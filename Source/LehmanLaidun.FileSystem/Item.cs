@@ -35,12 +35,6 @@ namespace LehmanLaidun.FileSystem
             Length = length;
         }
 
-        [Obsolete("Use the constructor with IFileSystem instead as this creates an erroneous result due to 'length'.", false)]
-        public static FileItem Create(string path, string filename)
-        {
-            return new FileItem(path, filename, 0); // TODO:Remove or correct this method.
-        }
-
         internal static FileItem Create(
             IFileSystem fileSystem, 
             string pathFile)

@@ -42,20 +42,20 @@ namespace LehmanLaidun.FileSystem
         public IEnumerable<FileItem> AsEnumerableFiles()
         {
             //  First take care of the files in the folder asked for.
-            foreach (var file
+            foreach (var pathfile
                 in _fileSystem.Directory.EnumerateFiles(Path, "*", System.IO.SearchOption.TopDirectoryOnly))
             {
-                yield return FileItem.Create(Path, _fileSystem.Path.GetFileName(file));
+                yield return FileItem.Create(_fileSystem, pathfile);
             }
  
             //  Then recurse the directories.
             foreach (var directory
                 in _fileSystem.Directory.EnumerateDirectories(Path, "*", System.IO.SearchOption.AllDirectories))
             {
-                foreach (var file
+                foreach (var pathfile
                     in _fileSystem.Directory.EnumerateFiles(directory, "*", System.IO.SearchOption.TopDirectoryOnly))
                 {
-                    yield return FileItem.Create(directory, _fileSystem.Path.GetFileName(file));
+                    yield return FileItem.Create(_fileSystem, pathfile);
                 }
             }
         }
