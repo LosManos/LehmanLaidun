@@ -1,27 +1,8 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.IO.Abstractions;
 
 namespace LehmanLaidun.FileSystem
 {
-    public abstract class FileSystemItem
-    {
-    }
-
-    public class DirectoryItem : FileSystemItem
-    {
-        public string Name { get; }
-
-        private DirectoryItem(string name)
-        {
-            Name = name;
-        }
-        
-        public static DirectoryItem Create(string name)
-        {
-            return new DirectoryItem(name);
-        }
-    }
-
     public class FileItem : FileSystemItem
     {
         public string Path { get; }
@@ -51,6 +32,34 @@ namespace LehmanLaidun.FileSystem
             long length = fileSystem.FileInfo.FromFileName(pathFile).Length;
 
             return new FileItem(path, filename, length);
+        }
+
+        public override bool Equals(object obj)
+        {
+            var item = obj as FileItem;
+            return item != null &&
+                   Path == item.Path &&
+                   Name == item.Name &&
+                   Length == item.Length;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -1534044191;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Path);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Name);
+            hashCode = hashCode * -1521134295 + Length.GetHashCode();
+            return hashCode;
+        }
+
+        public static bool operator ==(FileItem item1, FileItem item2)
+        {
+            return EqualityComparer<FileItem>.Default.Equals(item1, item2);
+        }
+
+        public static bool operator !=(FileItem item1, FileItem item2)
+        {
+            return !(item1 == item2);
         }
     }
 }

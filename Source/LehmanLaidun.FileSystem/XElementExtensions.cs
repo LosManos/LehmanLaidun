@@ -51,7 +51,11 @@ namespace LehmanLaidun.FileSystem
 
         public static XElement AddFileElement(this XElement element, FileItem file)
         {
-            var newElement = new XElement("file", new XAttribute("name", file.Name));
+            var newElement = new XElement(
+                "file",
+                new XAttribute("name", file.Name),
+                new XAttribute("length", file.Length)
+            );
             element.AddElement(newElement);
             return newElement;
         }

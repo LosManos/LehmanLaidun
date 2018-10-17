@@ -54,7 +54,7 @@ namespace LehmanLaidun.FileSystem.Test
                 // Indata with stuff found only in the *first* tree.
                 //
                 yield return new TestDatum(
-                    "The element should be found only in the first tree.", 
+                    "The element should be found only in the first tree.",
                     "<root><a/></root>",
                     "<root></root>",
                     Difference.Create(new XElement("a"), "/root/a[not(@*)]", FoundOnlyIn.First)
@@ -63,7 +63,7 @@ namespace LehmanLaidun.FileSystem.Test
                     "The inner element should be found only in the first tree.",
                     "<root><a><b/></a></root>",
                     "<root><a/></root>",
-                    Difference.Create(new XElement("b"), "/root/a[not(@*)]/b[not(@*)]",FoundOnlyIn.First)
+                    Difference.Create(new XElement("b"), "/root/a[not(@*)]/b[not(@*)]", FoundOnlyIn.First)
                 );
                 yield return new TestDatum(
                     "Element with attributes differs from one without. The attributes are in the first tree.",
@@ -76,8 +76,8 @@ namespace LehmanLaidun.FileSystem.Test
                     "The sequence elements should be found only in the first tree.",
                     "<root><a/><b/></root>",
                     "<root></root>",
-                        Difference.Create(new XElement("a")  , "/root/a[not(@*)]", FoundOnlyIn.First),
-                        Difference.Create(new XElement("b")  , "/root/b[not(@*)]", FoundOnlyIn.First)
+                        Difference.Create(new XElement("a"), "/root/a[not(@*)]", FoundOnlyIn.First),
+                        Difference.Create(new XElement("b"), "/root/b[not(@*)]", FoundOnlyIn.First)
                 );
 
                 //  Testdata with stuff found only in the *second* tree.
@@ -105,8 +105,8 @@ namespace LehmanLaidun.FileSystem.Test
                     "The elements should be found only in the second tree.",
                     "<root></root>",
                     "<root><a/><b/></root>",
-                    Difference.Create(new XElement("a")  , "/root/a[not(@*)]", FoundOnlyIn.Second),
-                    Difference.Create(new XElement("b")  , "/root/b[not(@*)]", FoundOnlyIn.Second)
+                    Difference.Create(new XElement("a"), "/root/a[not(@*)]", FoundOnlyIn.Second),
+                    Difference.Create(new XElement("b"), "/root/b[not(@*)]", FoundOnlyIn.Second)
                 );
                 yield return new TestDatum(
                     "Elements with only attributes differing should be found.",
@@ -211,42 +211,48 @@ namespace LehmanLaidun.FileSystem.Test
         }
 
         [TestMethod]
-        public void CanReturnList()
-        {
-            const string Path = @"c:\images";
-            var paths = new[] {
-                @"c:\images\20180924\image1.jpg",
-                @"c:\images\20180922\image3.jpg",
-                @"c:\images\image2.jpg" };
-
-            var mockedFileSystem = new MockFileSystem(new Dictionary<string, MockFileData>());
-            paths.ToList().ForEach(p => mockedFileSystem.AddFile(p, new MockFileData("a")));
-
-            var sut = LogicFactory.CreateForPath(mockedFileSystem, Path);
-
-            var res = sut.AsEnumerableFiles();
-
-            res.Select(r => System.IO.Path.Combine(r.Path, r.Name))
-                .Should().Contain(paths,
-                "Every file should be there in any order.");
-            res.Count().Should().Be(3, "Everything should be accounted for.");
-        }
-
-        [TestMethod]
-        public void CanReturnXml()
+        public void CanReturnListWithAllPropertiesSet()
         {
             //  #   Arrange.
             const string Path = @"c:\images";
-            var paths = new[]
-            {
-                @"c:\images\Vacation\20180606-100404.jpg",
-                @"c:\images\2018\201809\20180925-220604.jpg",
-                @"c:\images\2018\201809\20180925-220502.jpg",
-                @"c:\images\iphone backup\20180925-2207.jpg",
-                @"c:\images\stray image.jpg"
+            var files = new[] {
+                new { pathfile = @"c:\images\20180924\image1.jpg", length = 3},
+                new { pathfile = @"c:\images\20180922\image3.jpg", length = 5},
+                new { pathfile = @"c:\images\image2.jpg", length = 12}
             };
-            var mockedFileSystem = new MockFileSystem(new Dictionary<string, MockFileData>());
-            paths.ToList().ForEach(p => mockedFileSystem.AddFile(p, new MockFileData("a")));
+
+            var mockedFileSystem = new MockFileSystem(
+                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length))
+            );
+
+            var sut = LogicFactory.CreateForPath(mockedFileSystem, Path);
+
+            //  #   Act.
+            var res = sut.AsEnumerableFiles();
+
+            //  #   Assert.
+            res.Should().BeEquivalentTo(
+                files.Select(f => CreateFileItem(f.pathfile, f.length))
+            );
+        }
+
+        [TestMethod]
+        public void CanReturnXmlWithAllPropertiesSet()
+        {
+            //  #   Arrange.
+            const string Path = @"c:\images";
+            var files = new[]
+            {
+                new { pathfile = @"c:\images\Vacation\20180606-100404.jpg", length = 15 },
+                new { pathfile = @"c:\images\2018\201809\20180925-220604.jpg", length = 2 },
+                new { pathfile = @"c:\images\2018\201809\20180925-220502.jpg", length = 4 },
+                new { pathfile = @"c:\images\iphone backup\20180925-2207.jpg", length = 3 },
+                new { pathfile = @"c:\images\stray image.jpg", length = 4 }
+            };
+
+            var mockedFileSystem = new MockFileSystem(
+                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length))
+            );
 
             var sut = LogicFactory.CreateForPath(mockedFileSystem, Path);
 
@@ -258,19 +264,19 @@ namespace LehmanLaidun.FileSystem.Test
                 XDocument.Parse(@"
 <root path='c:\images'>
     <directory path=''>
-        <file name='stray image.jpg'/>
+        <file name='stray image.jpg' length='4'/>
     </directory>
     <directory path='Vacation'>
-        <file name='20180606-100404.jpg'/>
+        <file name='20180606-100404.jpg' length='15'/>
     </directory>
     <directory path='2018'>
         <directory path='201809'>
-            <file name='20180925-220604.jpg'/>
-            <file name='20180925-220502.jpg'/>
+            <file name='20180925-220604.jpg' length='2'/>
+            <file name='20180925-220502.jpg' length='4'/>
         </directory>
     </directory>
     <directory path='iphone backup'>
-        <file name='20180925-2207.jpg'/>
+        <file name='20180925-2207.jpg' length='3'/>
     </directory>
 </root>
 "));
@@ -374,6 +380,20 @@ namespace LehmanLaidun.FileSystem.Test
                     );
                 }
             }
+        }
+
+        private static FileItem CreateFileItem(string pathfile, int length)
+        {
+            var fs = new MockFileSystem();
+            var mf = new MockFileData(new string('a', length));
+            //var fi = new MockFileInfo(fs, pathfile);
+            fs.AddFile(pathfile, mf);
+            return FileItem.Create(fs, pathfile);
+        }
+
+        private static MockFileData CreateMockFileData(int length /*Should really be long*/)
+        {
+            return new MockFileData(new string('a', length));
         }
 
         #endregion
