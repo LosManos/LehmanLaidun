@@ -47,6 +47,7 @@ namespace LehmanLaidun.FileSystem
             {
                 yield return FileItem.Create(Path, _fileSystem.Path.GetFileName(file));
             }
+ 
             //  Then recurse the directories.
             foreach (var directory
                 in _fileSystem.Directory.EnumerateDirectories(Path, "*", System.IO.SearchOption.AllDirectories))

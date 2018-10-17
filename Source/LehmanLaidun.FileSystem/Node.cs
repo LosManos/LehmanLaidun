@@ -7,6 +7,7 @@ namespace LehmanLaidun.FileSystem
 {
     // https://stackoverflow.com/a/2012855/521554
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
+    [Obsolete("Is this class öused anymore?", error: false)]
     public class Node<T>
 	{
         public LinkedList<Node<T>> Children { get; }

@@ -8,6 +8,11 @@ namespace LehmanLaidun.FileSystem
         {
         }
 
+        /// <summary>This method creates a <see cref="Logic"/> object for anywhere in a folder structure.
+        /// </summary>
+        /// <param name="fileSystem">The FileSystem object, typically System.IO.FileSystem for production.</param>
+        /// <param name="path">Any path, rooted or not.</param>
+        /// <returns></returns>
         public static Logic CreateForPath(IFileSystem fileSystem, string path)
         {
             return Logic.Create(fileSystem, path);
