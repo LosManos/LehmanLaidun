@@ -13,7 +13,7 @@ namespace LehmanLaidun.FileSystem
         private IFileSystem _fileSystem;
 
         public string Path { get; }
-        
+
         /// <summary>This static constructor is the prefered.
         /// </summary>
         /// <param name="fileSystem"></param>
@@ -47,7 +47,7 @@ namespace LehmanLaidun.FileSystem
             {
                 yield return FileItem.Create(_fileSystem, pathfile);
             }
- 
+
             //  Then recurse the directories.
             foreach (var directory
                 in _fileSystem.Directory.EnumerateDirectories(Path, "*", System.IO.SearchOption.AllDirectories))
@@ -59,7 +59,7 @@ namespace LehmanLaidun.FileSystem
                 }
             }
         }
-    
+
         /// <summary>This method returns the file system's files as an XML.
         /// </summary>
         /// <returns></returns>
@@ -102,6 +102,27 @@ namespace LehmanLaidun.FileSystem
             return (result.Any() == false, result);
         }
 
+        public static IEnumerable<Duplicate> FindDuplicates(XDocument doc)
+        {
+            var fd = FlattenedDictionary(doc.Root);
+            var lst = fd.Where(f => f.Value.Count() >= 2);
+            return lst.Select(f => Duplicate.Create(f.Value.First().ShallowCopy(), f.Value.Select(g => GetXPathOf(g))));
+        }
+
+        private static SortedList<string, IEnumerable<XElement>> FlattenedDictionary(XElement element)
+        {
+            var ret = new SortedList<string, IEnumerable<XElement>>();
+            foreach (var e in Flatten(element))
+            {
+                var key = e.ShallowCopy().ToString();
+                ret[key] =
+                    ret.ContainsKey(key) ?
+                        ret[key].Concat(new[] { e }):
+                        new[] { e }; 
+            }
+            return ret;
+        }
+
         #region Private helper methods.
 
         private static IEnumerable<Difference> Compare(XElement firstElement, XElement secondElement, int rowNum, FoundOnlyIn foundOnlyIn)
@@ -110,19 +131,34 @@ namespace LehmanLaidun.FileSystem
 
             var firstXPath = GetXPathOf(firstElement);
             var existingElementsInSecond = secondElement.Document.XPathSelectElements(firstXPath);
-            if( existingElementsInSecond.Any() == false)
+            if (existingElementsInSecond.Any() == false)
             {
                 diffs.Add(Difference.Create(firstElement.ShallowCopy(), firstXPath, foundOnlyIn));
             }
-            else if( existingElementsInSecond.Count() == 1)
+            else if (existingElementsInSecond.Count() == 1)
             {
                 // OK.
             }
-            foreach( var child in firstElement.Elements())
+            foreach (var child in firstElement.Elements())
             {
                 diffs.AddRange(Compare(child, secondElement, 0, foundOnlyIn));
             }
             return diffs;
+        }
+
+        /// <summary>This method returns the element and everyting below as a list of elements.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        private static IEnumerable<XElement> Flatten(XElement element)
+        {
+            // We can rewrite this method to yield. There is another recursive method that yields in this class.
+            var ret = new List<XElement> { element };
+            foreach (var e in element.Elements())
+            {
+                ret.AddRange(Flatten(e));
+            }
+            return ret;
         }
 
         /// <summary>This method returns the xpath with element names and attributes for an element.
@@ -140,12 +176,12 @@ namespace LehmanLaidun.FileSystem
         private static string GetXPathOf(XElement element)
         {
             var root = element.Parents().Last();
-            var elementPath = 
+            var elementPath =
                 "/" +
                 element
                     .Parents()
                     .Reverse()
-                    .Select(e => e.Name.LocalName + (e==root ? string.Empty: GetXPathOf(e.Attributes())))
+                    .Select(e => e.Name.LocalName + (e == root ? string.Empty : GetXPathOf(e.Attributes())))
                     .StringJoin("/");
             return elementPath;
         }
@@ -158,15 +194,15 @@ namespace LehmanLaidun.FileSystem
         /// <returns></returns>
         private static string GetXPathOf(IEnumerable<XAttribute> attributes)
         {
-            return 
+            return
                 "[" +
                 (attributes.Any() ?
                     // TODO: Escape the values.
                     attributes
                         .Select(a => $"@{a.Name}='{a.Value}'")
                         .StringJoin(" and ") :
-                    "not(@*)" 
-                )+
+                    "not(@*)"
+                ) +
                 "]";
 
         }
@@ -176,7 +212,7 @@ namespace LehmanLaidun.FileSystem
             return ElementNamesAreEqual(element1, element2) &&
                 ElementAttributesAreEqual(element1, element2);
         }
-        
+
         private static bool ElementAttributesAreEqual(XElement element1, XElement element2)
         {
             throw new NotImplementedException();
