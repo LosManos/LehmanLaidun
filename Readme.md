@@ -21,12 +21,15 @@ Or at your company - everyone dumps everything everywhere and what is really the
 
 A GUI or console. Point it at two folders. Get a report showing differences.
 
+A GUI or console. Point it at a folder. Get a report of duplicates and possible duplicates.  
+It says "possible" duplicates since two files with the exact same content but different names might be or not be the same file. If it is vacation pictures it is probably the same file, unless one is a copy in the folder "Send to print shop".
+
 Then we can add functionality for easing the diffing; like an image viewer to quickly choose the one to keep.
 Configurability for, for example, if a file with the same content but different file name is different or not.
 
 ## Example of usage through code
 
-### Get info files and folder info from a folder structure.
+### Get info files and folder info from a folder structure. Return all files as a list or as an xml tree.
 
     using LehmanLaidun.FileSystem;
     using System.Collections.Generic;
@@ -36,7 +39,7 @@ Configurability for, for example, if a file with the same content but different 
     IEnumerable<FileItem> files = logic.AsEnumerableFiles();
     XDocument xml = logic.AsXDocument();
 
-### Compare 2 xml files.
+### Compare 2 xml folder structures. Return a list of differences.
 
     var doc1 = LogicFactory.CreateForPath(@"C:\MyPictures").AsXDocument();
     var doc2 = LogicFactory.CreateForPath(@"D:\MyUsb").AsXDocument();
@@ -49,3 +52,12 @@ Configurability for, for example, if a file with the same content but different 
     }
 
 There is a a skeleton of a console application that compare two folder structures.
+
+### Find all duplicate files in a folder structure.
+
+    var doc = XDocument.Parse(xmlString);
+	var differences = Logic.FindDuplicates(doc);
+
+	foreach( var diff in differences ){
+		Console.WriteLine( ... )
+	}
