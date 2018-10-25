@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using static LehmanLaidun.FileSystem.Difference;
 
@@ -273,6 +274,97 @@ namespace LehmanLaidun.FileSystem.Test
                 });
 
             res.Should().BeEquivalentTo(expectedDuplicates, message);
+        }
+
+        [TestMethod]
+        [DataRow(@"<root/>", 
+            new string[] { },
+            "No similaries found in an empty input.")]
+        [DataRow(@"
+<root>
+    <d n='a'>
+        <f n='b' s='12'/>
+        <f n='d' s='123'/>
+    </d>
+    <d n='c'>
+        <f n='b' s='13'/>
+    </d>
+</root>", 
+            new[]{
+                @"/root/d[@n='a']/f[@n='b' and @s='12']",
+                @"/root/d[@n='c']/f[@n='b' and @s='13']",
+            },
+            "File with same name but different size found."
+        )]
+        [DataRow(@"
+<root>
+    <d n='a'>
+        <f n='b' s='12'/>
+        <f n='d' s='123'/>
+    </d>
+    <d n='c'>
+        <f n='e' s='12'/>
+    </d>
+</root>", 
+            new[]{
+                @"/root/d[@n='a']/f[@n='b' and @s='12']",
+                @"/root/d[@n='c']/f[@n='e' and @s='12']",
+            },
+            "File with same size but different name found."
+        )]
+        [DataRow(@"
+<root>
+    <d n='a'>
+        <f n='b' s='12'/>
+        <f n='d' s='123'/>
+    </d>
+    <d n='c'>
+        <f n='b' s='12'/>
+    </d>
+</root>", 
+            new[]{
+                @"/root/d[@n='a']/f[@n='b' and @s='12']",
+                @"/root/d[@n='c']/f[@n='b' and @s='12']",
+            },
+            "Identical files found."
+        )]
+        public void CanFindSimilars_ReturnFittingSimilars(string xmlString, string[] expectedXpaths, string message)
+        {
+            //  #   Arrange.
+            var doc = XDocument.Parse(xmlString);
+            Func<string, XElement> toElement = (string xpath) =>
+             {
+                 var elementString = xpath.Split('/').Last();
+                 var matches = Regex.Match(elementString, @"(.*)\[(.*)\]");
+                 var name = matches.Groups[1].Value;
+                 var attributesString = matches.Groups[2].Value;
+                 var attributesStrings = attributesString.Split("and");
+                 var attributes = attributesStrings
+                    .Select(x => {
+                        var nameValuePair = x.Split("=");
+                        return (
+                            name: nameValuePair.First().Trim().TrimStart('@').Trim(),
+                            value: nameValuePair.Last().Trim().TrimStart('\'').TrimEnd('\'')
+                        );
+                    });
+                 var ret = new XElement(
+                     name,
+                     attributes.Select(a => new XAttribute(a.name, a.value)));
+                 return ret;
+             };
+            Func<IEnumerable<string>, IEnumerable<Similar>> toSimilars = xpaths =>
+            {
+                return xpaths
+                    .Select(ex => Similar.Create(toElement(ex), ex));
+            };
+
+            //  #   Act.
+            var res = Logic.FindSimilars(doc);
+
+            //  #   Assert.
+            res.Should().BeEquivalentTo(toSimilars(expectedXpaths), message);
+
+            Assert.Fail("TBA:Refine with type of similarity and prefereably some way to abstrace file and size.");
         }
 
         [TestMethod]

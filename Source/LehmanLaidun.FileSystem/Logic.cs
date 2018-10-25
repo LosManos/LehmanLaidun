@@ -110,9 +110,62 @@ namespace LehmanLaidun.FileSystem
         /// <returns></returns>
         public static IEnumerable<Duplicate> FindDuplicates(XDocument doc)
         {
-            var fd = FlattenedDictionary(doc.Root);
+            var fd = ListOfElementsWithXpaths(doc.Root);
             var lst = fd.Where(f => f.Value.Count() >= 2);
             return lst.Select(f => Duplicate.Create(f.Value.First().ShallowCopy(), f.Value.Select(g => GetXPathOf(g))));
+        }
+
+        public static IEnumerable<Similar>FindSimilars(XDocument doc)
+        {
+            //var elements = new List<string>();
+            //foreach (var element in Flatten(doc.Root))
+            //{
+            //    var elementString = element.ShallowCopy().ToString();
+            //    if (elements.Contains(elementString)){
+            //        yield return Similar.Create(element);
+            //    }
+            //    elements.Add(elementString);
+            //}
+            var elements = new SortedDictionary<string, (XElement element, string n, long s)>();
+            foreach(var element in Flatten(doc.Root).Where(e=>e.Name=="f"))
+            {
+                elements.Add(
+                    GetXPathOf(element),
+                    (element : element.ShallowCopy(), 
+                    n : element.Attribute("n").Value, 
+                    s : long.Parse(element.Attribute("s").Value)));
+            }
+
+            foreach( var element in elements)
+            {
+                // Same name and same size.
+                var x = elements.Where(e =>
+                    element.Key != e.Key &&
+                    element.Value.n == e.Value.n &&
+                    element.Value.s == e.Value.s);
+                if( x.Any())
+                {
+                    yield return Similar.Create(element.Value.element, element.Key);
+                }
+                // Same name but different sizes.
+                x = elements.Where(e =>
+                    element.Key != e.Key &&
+                    element.Value.n == e.Value.n &&
+                    element.Value.s != e.Value.s);
+                if (x.Any())
+                {
+                    yield return Similar.Create(element.Value.element, element.Key);
+                }
+                // Same size but different names.
+                x = elements.Where(e =>
+                    element.Key != e.Key &&
+                    element.Value.n != e.Value.n &&
+                    element.Value.s == e.Value.s);
+                if (x.Any())
+                {
+                    yield return Similar.Create(element.Value.element, element.Key);
+                }
+            }
         }
 
         #region Private helper methods.
@@ -176,7 +229,7 @@ namespace LehmanLaidun.FileSystem
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        private static SortedList<string, IEnumerable<XElement>> FlattenedDictionary(XElement element)
+        private static SortedList<string, IEnumerable<XElement>> ListOfElementsWithXpaths(XElement element)
         {
             var ret = new SortedList<string, IEnumerable<XElement>>();
             foreach (var e in Flatten(element))
