@@ -6,119 +6,12 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using static LehmanLaidun.FileSystem.Difference;
 
 namespace LehmanLaidun.FileSystem.Test
 {
     [TestClass]
-    public class ControlTest
+    public partial class ControlTest
     {
-        public class TestDatum
-        {
-            public string FirstXml { get; }
-            public string SecondXml { get; }
-            public IEnumerable<Difference> Differences { get; }
-            public string Message { get; }
-
-            [Obsolete("Replace with the one taking [message] as first argument", false)]
-            public TestDatum(string firstXml, string secondXml, Difference difference, string message)
-                : this(firstXml, secondXml, new[] { difference }, message)
-            {
-            }
-
-            [Obsolete("Replace with the one taking [message] as first argument", false)]
-            public TestDatum(string firstXml, string secondXml, IEnumerable<Difference> differences, string message)
-            {
-                FirstXml = firstXml;
-                SecondXml = secondXml;
-                Differences = differences;
-                Message = message;
-            }
-
-            public TestDatum(
-                string message,
-                string firstXml,
-                string secondXml,
-                params Difference[] differences)
-            {
-                Message = message;
-                FirstXml = firstXml;
-                SecondXml = secondXml;
-                Differences = differences;
-            }
-        }
-
-        IEnumerable<TestDatum> _canCompareXml_ReturnNotEqualAndDIfferences_TestData
-        {
-            get
-            {
-                // Indata with stuff found only in the *first* tree.
-                //
-                yield return new TestDatum(
-                    "The element should be found only in the first tree.",
-                    "<root><a/></root>",
-                    "<root></root>",
-                    Difference.Create(new XElement("a"), "/root/a[not(@*)]", FoundOnlyIn.First)
-                );
-                yield return new TestDatum(
-                    "The inner element should be found only in the first tree.",
-                    "<root><a><b/></a></root>",
-                    "<root><a/></root>",
-                    Difference.Create(new XElement("b"), "/root/a[not(@*)]/b[not(@*)]", FoundOnlyIn.First)
-                );
-                yield return new TestDatum(
-                    "Element with attributes differs from one without. The attributes are in the first tree.",
-                    "<root><a b='c'/></root>",
-                    "<root><a/></root>",
-                    Difference.Create(new XElement("a", new XAttribute("b", "c")), "/root/a[@b='c']", FoundOnlyIn.First),
-                    Difference.Create(new XElement("a"), "/root/a[not(@*)]", FoundOnlyIn.Second)
-                );
-                yield return new TestDatum(
-                    "The sequence elements should be found only in the first tree.",
-                    "<root><a/><b/></root>",
-                    "<root></root>",
-                        Difference.Create(new XElement("a"), "/root/a[not(@*)]", FoundOnlyIn.First),
-                        Difference.Create(new XElement("b"), "/root/b[not(@*)]", FoundOnlyIn.First)
-                );
-
-                //  Testdata with stuff found only in the *second* tree.
-                //
-                yield return new TestDatum(
-                    "The element should be found only in the second tree.",
-                    "<root></root>",
-                    "<root><a/></root>",
-                    Difference.Create(new XElement("a"), "/root/a[not(@*)]", FoundOnlyIn.Second)
-                );
-                yield return new TestDatum(
-                    "The inner element should be found only in the second tree.",
-                    "<root><a/></root>",
-                    "<root><a><b/></a></root>",
-                    Difference.Create(new XElement("b"), "/root/a[not(@*)]/b[not(@*)]", FoundOnlyIn.Second)
-                    );
-                yield return new TestDatum(
-                    "The element with attributes should be found only in the second tree.",
-                    "<root><a/></root>",
-                    "<root><a b='c'/></root>",
-                    Difference.Create(new XElement("a"), "/root/a[not(@*)]", FoundOnlyIn.First),
-                    Difference.Create(new XElement("a", new XAttribute("b", "c")), "/root/a[@b='c']", FoundOnlyIn.Second)
-                );
-                yield return new TestDatum(
-                    "The elements should be found only in the second tree.",
-                    "<root></root>",
-                    "<root><a/><b/></root>",
-                    Difference.Create(new XElement("a"), "/root/a[not(@*)]", FoundOnlyIn.Second),
-                    Difference.Create(new XElement("b"), "/root/b[not(@*)]", FoundOnlyIn.Second)
-                );
-                yield return new TestDatum(
-                    "Elements with only attributes differing should be found.",
-                    "<root><a b='c'/></root>",
-                    "<root><a d='e'/></root>",
-                    Difference.Create(new XElement("a", new XAttribute("b", "c")), "/root/a[@b='c']", FoundOnlyIn.First),
-                    Difference.Create(new XElement("a", new XAttribute("d", "e")), "/root/a[@d='e']", FoundOnlyIn.Second)
-                );
-            }
-        }
-
         [DataTestMethod]
         [DataRow(@"<root/>", @"<root/>", "A simple root should be equal to itself.")]
         [DataRow(@"<root a='b'/>", @"<root/>", "The attributes of the root does not matter.")]
@@ -194,7 +87,7 @@ namespace LehmanLaidun.FileSystem.Test
         [TestMethod]
         public void CanCompareXml_ReturnNotEqualAndDIfferences()
         {
-            foreach (var testDatum in _canCompareXml_ReturnNotEqualAndDIfferences_TestData)
+            foreach (var testDatum in CanCompareXmlTestData)
             {
                 //  #   Act.
                 var res = Logic.CompareXml(XDocument.Parse(testDatum.FirstXml), XDocument.Parse(testDatum.SecondXml));
@@ -264,7 +157,7 @@ namespace LehmanLaidun.FileSystem.Test
 
             //  #   Act.
             var res = Logic.FindDuplicates(doc);
-            
+
             //  #   Assert.
             var expectedDuplicates = expecteds
                 .Select(expected =>
@@ -276,62 +169,69 @@ namespace LehmanLaidun.FileSystem.Test
             res.Should().BeEquivalentTo(expectedDuplicates, message);
         }
 
-        [TestMethod]
-        [DataRow(@"<root/>", 
-            new string[] { },
-            "No similaries found in an empty input.")]
-        [DataRow(@"
-<root>
-    <d n='a'>
-        <f n='b' s='12'/>
-        <f n='d' s='123'/>
-    </d>
-    <d n='c'>
-        <f n='b' s='13'/>
-    </d>
-</root>", 
-            new[]{
-                @"/root/d[@n='a']/f[@n='b' and @s='12']",
-                @"/root/d[@n='c']/f[@n='b' and @s='13']",
-            },
-            "File with same name but different size found."
-        )]
-        [DataRow(@"
-<root>
-    <d n='a'>
-        <f n='b' s='12'/>
-        <f n='d' s='123'/>
-    </d>
-    <d n='c'>
-        <f n='e' s='12'/>
-    </d>
-</root>", 
-            new[]{
-                @"/root/d[@n='a']/f[@n='b' and @s='12']",
-                @"/root/d[@n='c']/f[@n='e' and @s='12']",
-            },
-            "File with same size but different name found."
-        )]
-        [DataRow(@"
-<root>
-    <d n='a'>
-        <f n='b' s='12'/>
-        <f n='d' s='123'/>
-    </d>
-    <d n='c'>
-        <f n='b' s='12'/>
-    </d>
-</root>", 
-            new[]{
-                @"/root/d[@n='a']/f[@n='b' and @s='12']",
-                @"/root/d[@n='c']/f[@n='b' and @s='12']",
-            },
-            "Identical files found."
-        )]
-        public void CanFindSimilars_ReturnFittingSimilars(string xmlString, string[] expectedXpaths, string message)
+        ////public static IEnumerable<object[]> TestMethodInput
+        ////{
+        ////    get
+        ////    {
+        ////        yield return new object[]
+        ////        {
+        ////                (name:"s", value:false)
+        ////        };
+        ////    }
+        ////}
+        //internal class TestClass
+        //{
+        //    internal string Name { get; set; }
+        //    internal bool Value { get; set; }
+        //    internal static TestClass Create(string name, bool value)
+        //    {
+        //        return new TestClass
+        //        {
+        //            Name = name,
+        //            Value = value
+        //        };
+        //    }
+        //    internal object[] ToObjectArray()
+        //    {
+        //        return new object[] { Name, Value };
+        //    }
+        //}
+        //public static IEnumerable<object[]> TestMetjhojdInput2
+        //{
+        //    get
+        //    {
+        //        yield return TestClass.Create("myname", true).ToObjectArray();
+        //    }
+        //}
+
+        //[DataTestMethod]
+        ////[DynamicData(nameof(TestMethodInput))]
+        //[DynamicData(nameof(TestMetjhojdInput2))]
+        //public void TestMEthod(string name, bool value)
+        //{
+        //    //var param = ((string name,bool value))o;
+        //    //var name= param.name;
+        //    // ? (((string name,bool))o).name
+        //    Assert.Fail("Testing");
+        //}
+    
+        [DataTestMethod]
+        [DynamicData(nameof(SimilarTestData))]
+        public void CanFindSimilars_ReturnFittingSimilars(
+            XDocument doc,
+            (
+                string RuleName,
+                Func<
+                (
+                    XElement FirstElement,
+                    XElement SecondElement
+                ),
+                bool>[] Comparers
+            )[] rules, 
+            IEnumerable<(string,string)> expectedXpaths, 
+            string message)
         {
             //  #   Arrange.
-            var doc = XDocument.Parse(xmlString);
             Func<string, XElement> toElement = (string xpath) =>
              {
                  var elementString = xpath.Split('/').Last();
@@ -340,7 +240,8 @@ namespace LehmanLaidun.FileSystem.Test
                  var attributesString = matches.Groups[2].Value;
                  var attributesStrings = attributesString.Split("and");
                  var attributes = attributesStrings
-                    .Select(x => {
+                    .Select(x =>
+                    {
                         var nameValuePair = x.Split("=");
                         return (
                             name: nameValuePair.First().Trim().TrimStart('@').Trim(),
@@ -352,19 +253,24 @@ namespace LehmanLaidun.FileSystem.Test
                      attributes.Select(a => new XAttribute(a.name, a.value)));
                  return ret;
              };
-            Func<IEnumerable<string>, IEnumerable<Similar>> toSimilars = xpaths =>
+            Func<IEnumerable<(string FirstXpath,string SecondXpath)>, IEnumerable<Similar>> toSimilars = xpaths =>
             {
                 return xpaths
-                    .Select(ex => Similar.Create(toElement(ex), ex));
+                    .Select(ex => Similar.Create(
+                        toElement(ex.FirstXpath), 
+                        ex.FirstXpath, 
+                        toElement(ex.SecondXpath), 
+                        ex.SecondXpath)
+                    );
             };
 
             //  #   Act.
-            var res = Logic.FindSimilars(doc);
+            var res = Logic.FindSimilars(doc, rules);
 
             //  #   Assert.
             res.Should().BeEquivalentTo(toSimilars(expectedXpaths), message);
 
-            Assert.Fail("TBA:Refine with type of similarity and prefereably some way to abstrace file and size.");
+            Assert.Fail("TBA:Refine with type of similarity and also multiple in result.");
         }
 
         [TestMethod]
@@ -503,7 +409,7 @@ namespace LehmanLaidun.FileSystem.Test
 
         #region Helper methods.
 
-        private static void Assert_Differences(IEnumerable<Difference> actualDifferences, TestDatum expectedTestDatum)
+        private static void Assert_Differences(IEnumerable<Difference> actualDifferences, CanCompareXmlTestDataClass expectedTestDatum)
         {
             foreach (var diff in actualDifferences)
             {

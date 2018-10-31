@@ -115,55 +115,36 @@ namespace LehmanLaidun.FileSystem
             return lst.Select(f => Duplicate.Create(f.Value.First().ShallowCopy(), f.Value.Select(g => GetXPathOf(g))));
         }
 
-        public static IEnumerable<Similar>FindSimilars(XDocument doc)
+        public static IEnumerable<Similar> FindSimilars(
+            XDocument doc,
+            (
+                string RuleName,
+                Func<(
+                    XElement FirstElement,
+                    XElement SecondElement),
+                    bool>[] Comparers
+            )[] rules
+        )
         {
-            //var elements = new List<string>();
-            //foreach (var element in Flatten(doc.Root))
-            //{
-            //    var elementString = element.ShallowCopy().ToString();
-            //    if (elements.Contains(elementString)){
-            //        yield return Similar.Create(element);
-            //    }
-            //    elements.Add(elementString);
-            //}
-            var elements = new SortedDictionary<string, (XElement element, string n, long s)>();
-            foreach(var element in Flatten(doc.Root).Where(e=>e.Name=="f"))
-            {
-                elements.Add(
-                    GetXPathOf(element),
-                    (element : element.ShallowCopy(), 
-                    n : element.Attribute("n").Value, 
-                    s : long.Parse(element.Attribute("s").Value)));
-            }
+            if (rules == null) { throw new ArgumentNullException(nameof(rules)); }
 
-            foreach( var element in elements)
+            var elements = Flatten(doc.Root).Where(e=>e != doc.Root).ToList();
+            for( var outerIndex = 0; outerIndex < elements.Count(); ++ outerIndex)
             {
-                // Same name and same size.
-                var x = elements.Where(e =>
-                    element.Key != e.Key &&
-                    element.Value.n == e.Value.n &&
-                    element.Value.s == e.Value.s);
-                if( x.Any())
+                var firstElement = elements[outerIndex];
+                for( var innerIndex = outerIndex+1; innerIndex < elements.Count(); ++innerIndex)
                 {
-                    yield return Similar.Create(element.Value.element, element.Key);
-                }
-                // Same name but different sizes.
-                x = elements.Where(e =>
-                    element.Key != e.Key &&
-                    element.Value.n == e.Value.n &&
-                    element.Value.s != e.Value.s);
-                if (x.Any())
-                {
-                    yield return Similar.Create(element.Value.element, element.Key);
-                }
-                // Same size but different names.
-                x = elements.Where(e =>
-                    element.Key != e.Key &&
-                    element.Value.n != e.Value.n &&
-                    element.Value.s == e.Value.s);
-                if (x.Any())
-                {
-                    yield return Similar.Create(element.Value.element, element.Key);
+                    var secondElement = elements[innerIndex];
+                    if( firstElement != secondElement) {
+                        foreach (var rule in rules)
+                        {
+                            var ruleName = rule.RuleName;
+                            if (rule.Comparers.All(c => c((FirstElement: firstElement, SecondElement: secondElement))))
+                            {
+                                yield return Similar.Create(firstElement.ShallowCopy(), GetXPathOf(firstElement), secondElement.ShallowCopy(),  GetXPathOf(secondElement));
+                            }
+                        }
+                    }
                 }
             }
         }

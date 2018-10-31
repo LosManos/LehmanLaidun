@@ -6,36 +6,47 @@ namespace LehmanLaidun.FileSystem
 {
     public class Similar
     {
-        public XElement Element { get; }
-        public string Xpath { get; }
+        public XElement FirstElement { get; }
+        public XElement SecondElement { get; }
+        public string FirstXpath { get; }
+        public string SecondXpath { get; }
 
         private Similar(
-            XElement element,
-            string xPath)
+            XElement firstElement,
+            string firstXpath, 
+            XElement secondElement,
+            string secondXpath)
         {
-            if (element.HasElements) { throw new ArgumentException("The element must not have any children. Use ShallowCopy.", nameof(element)); }
-            Element = element;
-            Xpath = xPath;
+            if (firstElement.HasElements) { throw new ArgumentException("The first element must not have any children. Use ShallowCopy.", nameof(firstElement)); }
+            if (secondElement.HasElements) { throw new ArgumentException("The second element must not have any children. Use ShallowCopy.", nameof(secondElement)); }
+            FirstElement = firstElement;
+            SecondElement = secondElement;
+            FirstXpath = firstXpath;
+            SecondXpath = secondXpath;
         }
 
-        public static Similar Create(XElement element, string xpath)
+        public static Similar Create(XElement firstElement, string firstXpath, XElement secondElement, string secondXpath)
         {
-            return new Similar(element, xpath);
+            return new Similar(firstElement, firstXpath, secondElement, secondXpath);
         }
 
         public override bool Equals(object obj)
         {
             var similar = obj as Similar;
             return similar != null &&
-                   EqualityComparer<string>.Default.Equals(Element?.ToString(), similar.Element?.ToString()) &&
-                   Xpath == similar.Xpath;
+                   EqualityComparer<string>.Default.Equals(FirstElement?.ToString(), similar.FirstElement?.ToString()) &&
+                   FirstXpath == similar.FirstXpath &&
+                   EqualityComparer<string>.Default.Equals(SecondElement?.ToString(), similar.SecondElement?.ToString()) &&
+                   SecondXpath == similar.SecondXpath;
         }
 
         public override int GetHashCode()
         {
             var hashCode = 801317247;
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Element?.ToString());
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Xpath);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(FirstElement?.ToString());
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(FirstXpath);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(SecondElement?.ToString());
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(SecondXpath);
             return hashCode;
         }
 
