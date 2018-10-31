@@ -115,6 +115,11 @@ namespace LehmanLaidun.FileSystem
             return lst.Select(f => Duplicate.Create(f.Value.First().ShallowCopy(), f.Value.Select(g => GetXPathOf(g))));
         }
 
+        /// <summary>This method returns a list of similar elements in an Xml document.
+        /// </summary>
+        /// <param name="doc">The xml document.</param>
+        /// <param name="rules">A bunch of rules for comparing. The rules are methods returning true if they elements are similar.</param>
+        /// <returns></returns>
         public static IEnumerable<Similar> FindSimilars(
             XDocument doc,
             (
@@ -128,20 +133,21 @@ namespace LehmanLaidun.FileSystem
         {
             if (rules == null) { throw new ArgumentNullException(nameof(rules)); }
 
-            var elements = Flatten(doc.Root).Where(e=>e != doc.Root).ToList();
-            for( var outerIndex = 0; outerIndex < elements.Count(); ++ outerIndex)
+            var elements = Flatten(doc.Root).Where(e => e != doc.Root).ToList();
+            for (var outerIndex = 0; outerIndex < elements.Count(); ++outerIndex)
             {
                 var firstElement = elements[outerIndex];
-                for( var innerIndex = outerIndex+1; innerIndex < elements.Count(); ++innerIndex)
+                for (var innerIndex = outerIndex + 1; innerIndex < elements.Count(); ++innerIndex)
                 {
                     var secondElement = elements[innerIndex];
-                    if( firstElement != secondElement) {
+                    if (firstElement != secondElement)
+                    {
                         foreach (var rule in rules)
                         {
                             var ruleName = rule.RuleName;
                             if (rule.Comparers.All(c => c((FirstElement: firstElement, SecondElement: secondElement))))
                             {
-                                yield return Similar.Create(firstElement.ShallowCopy(), GetXPathOf(firstElement), secondElement.ShallowCopy(),  GetXPathOf(secondElement));
+                                yield return Similar.Create(firstElement.ShallowCopy(), GetXPathOf(firstElement), secondElement.ShallowCopy(), GetXPathOf(secondElement));
                             }
                         }
                     }
@@ -203,32 +209,11 @@ namespace LehmanLaidun.FileSystem
             return ret;
         }
 
-        /// <summary>This methods returns all unique elements in an xml as a list.
-        /// The list returns is a keyvalue list where
-        /// the key is the element as string. e.g. &lt;Customer Name='Sisyfos'/&gt;
-        /// the value is a list of xpathes to find the key.
-        /// </summary>
-        /// <param name="element"></param>
-        /// <returns></returns>
-        private static SortedList<string, IEnumerable<XElement>> ListOfElementsWithXpaths(XElement element)
-        {
-            var ret = new SortedList<string, IEnumerable<XElement>>();
-            foreach (var e in Flatten(element))
-            {
-                var key = e.ShallowCopy().ToString();
-                ret[key] =
-                    ret.ContainsKey(key) ?
-                        ret[key].Concat(new[] { e }) :
-                        new[] { e };
-            }
-            return ret;
-        }
-
         /// <summary>This method returns the xpath with element names and attributes for an element.
         /// But! the root's part of the xpath is without attributes.
         /// <code>
         /// &lt;root path='c:\'&gt;
-    	///     &lt;folder path = 'c:\documents\'/&gt;
+        ///     &lt;folder path = 'c:\documents\'/&gt;
         /// &lt;/ root &gt;
         /// returns
         /// "root/folder[@path = 'c:\documents\']"
@@ -270,6 +255,45 @@ namespace LehmanLaidun.FileSystem
 
         }
 
+        /// <summary>This methods returns all unique elements in an xml as a list.
+        /// The list returns is a keyvalue list where
+        /// the key is the element as string. e.g. &lt;Customer Name='Sisyfos'/&gt;
+        /// the value is a list of xpathes to find the key.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        private static SortedList<string, IEnumerable<XElement>> ListOfElementsWithXpaths(XElement element)
+        {
+            var ret = new SortedList<string, IEnumerable<XElement>>();
+            foreach (var e in Flatten(element))
+            {
+                var key = e.ShallowCopy().ToString();
+                ret[key] =
+                    ret.ContainsKey(key) ?
+                        ret[key].Concat(new[] { e }) :
+                        new[] { e };
+            }
+            return ret;
+        }
+
+        /// <summary>This method returns a string representing all attribute names.
+        /// Together with the element name one can then sort the elements on name and attributes.
+        /// 
+        /// NOTE: The implementation is not totally correct. A character that cannot be used as an attribute is used as delimiter
+        /// but that does not work if the attributes has characters sorted both before and after than the delimiter.
+        /// For instance, 0x9, 0xA and 0xD are probably sorted before the delimiter, &gt; ,which is somewhere around 34(decimal).
+        /// Normal letters (>=64dec) are, I guess, sorted after the delimiter.
+        /// <see cref="https://www.w3.org/TR/xml/#charsets"/>
+        /// But for now it works.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        private static string SortableAttributes(XElement element)
+        {
+            var attributes = element.Attributes().OrderBy(a => a.Name.LocalName);
+            return string.Join(">", attributes);
+        }
+
         /// <summary>This recursive method sorts an xml tree.
         /// Sorting order is element and attribute names. The order of the attributes is not interesting
         /// and by that means that an element E with attributes A and B is equal in sort order
@@ -303,24 +327,6 @@ namespace LehmanLaidun.FileSystem
         private static XDocument SortXml(XDocument xml)
         {
             return new XDocument(Sort(xml.Root));
-        }
-
-        /// <summary>This method returns a string representing all attribute names.
-        /// Together with the element name one can then sort the elements on name and attributes.
-        /// 
-        /// NOTE: The implementation is not totally correct. A character that cannot be used as an attribute is used as delimiter
-        /// but that does not work if the attributes has characters sorted both before and after than the delimiter.
-        /// For instance, 0x9, 0xA and 0xD are probably sorted before the delimiter, &gt; ,which is somewhere around 34(decimal).
-        /// Normal letters (>=64dec) are, I guess, sorted after the delimiter.
-        /// <see cref="https://www.w3.org/TR/xml/#charsets"/>
-        /// But for now it works.
-        /// </summary>
-        /// <param name="element"></param>
-        /// <returns></returns>
-        private static string SortableAttributes(XElement element)
-        {
-            var attributes = element.Attributes().OrderBy(a => a.Name.LocalName);
-            return string.Join(">", attributes);
         }
 
         #endregion

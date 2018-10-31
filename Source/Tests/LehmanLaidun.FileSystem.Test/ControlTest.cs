@@ -157,7 +157,7 @@ namespace LehmanLaidun.FileSystem.Test
 
             //  #   Act.
             var res = Logic.FindDuplicates(doc);
-
+            
             //  #   Assert.
             var expectedDuplicates = expecteds
                 .Select(expected =>
@@ -167,110 +167,6 @@ namespace LehmanLaidun.FileSystem.Test
                 });
 
             res.Should().BeEquivalentTo(expectedDuplicates, message);
-        }
-
-        ////public static IEnumerable<object[]> TestMethodInput
-        ////{
-        ////    get
-        ////    {
-        ////        yield return new object[]
-        ////        {
-        ////                (name:"s", value:false)
-        ////        };
-        ////    }
-        ////}
-        //internal class TestClass
-        //{
-        //    internal string Name { get; set; }
-        //    internal bool Value { get; set; }
-        //    internal static TestClass Create(string name, bool value)
-        //    {
-        //        return new TestClass
-        //        {
-        //            Name = name,
-        //            Value = value
-        //        };
-        //    }
-        //    internal object[] ToObjectArray()
-        //    {
-        //        return new object[] { Name, Value };
-        //    }
-        //}
-        //public static IEnumerable<object[]> TestMetjhojdInput2
-        //{
-        //    get
-        //    {
-        //        yield return TestClass.Create("myname", true).ToObjectArray();
-        //    }
-        //}
-
-        //[DataTestMethod]
-        ////[DynamicData(nameof(TestMethodInput))]
-        //[DynamicData(nameof(TestMetjhojdInput2))]
-        //public void TestMEthod(string name, bool value)
-        //{
-        //    //var param = ((string name,bool value))o;
-        //    //var name= param.name;
-        //    // ? (((string name,bool))o).name
-        //    Assert.Fail("Testing");
-        //}
-    
-        [DataTestMethod]
-        [DynamicData(nameof(SimilarTestData))]
-        public void CanFindSimilars_ReturnFittingSimilars(
-            XDocument doc,
-            (
-                string RuleName,
-                Func<
-                (
-                    XElement FirstElement,
-                    XElement SecondElement
-                ),
-                bool>[] Comparers
-            )[] rules, 
-            IEnumerable<(string,string)> expectedXpaths, 
-            string message)
-        {
-            //  #   Arrange.
-            Func<string, XElement> toElement = (string xpath) =>
-             {
-                 var elementString = xpath.Split('/').Last();
-                 var matches = Regex.Match(elementString, @"(.*)\[(.*)\]");
-                 var name = matches.Groups[1].Value;
-                 var attributesString = matches.Groups[2].Value;
-                 var attributesStrings = attributesString.Split("and");
-                 var attributes = attributesStrings
-                    .Select(x =>
-                    {
-                        var nameValuePair = x.Split("=");
-                        return (
-                            name: nameValuePair.First().Trim().TrimStart('@').Trim(),
-                            value: nameValuePair.Last().Trim().TrimStart('\'').TrimEnd('\'')
-                        );
-                    });
-                 var ret = new XElement(
-                     name,
-                     attributes.Select(a => new XAttribute(a.name, a.value)));
-                 return ret;
-             };
-            Func<IEnumerable<(string FirstXpath,string SecondXpath)>, IEnumerable<Similar>> toSimilars = xpaths =>
-            {
-                return xpaths
-                    .Select(ex => Similar.Create(
-                        toElement(ex.FirstXpath), 
-                        ex.FirstXpath, 
-                        toElement(ex.SecondXpath), 
-                        ex.SecondXpath)
-                    );
-            };
-
-            //  #   Act.
-            var res = Logic.FindSimilars(doc, rules);
-
-            //  #   Assert.
-            res.Should().BeEquivalentTo(toSimilars(expectedXpaths), message);
-
-            Assert.Fail("TBA:Refine with type of similarity and also multiple in result.");
         }
 
         [TestMethod]
