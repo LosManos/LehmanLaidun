@@ -169,6 +169,64 @@ namespace LehmanLaidun.FileSystem.Test
             res.Should().BeEquivalentTo(expectedDuplicates, message);
         }
 
+        [DataTestMethod]
+        [DynamicData(nameof(SimilarTestData))]
+        public void CanFindSimilars_ReturnFittingSimilars(
+            XDocument doc,
+            (
+                string RuleName,
+                Func<
+                (
+                    XElement FirstElement,
+                    XElement SecondElement
+                ),
+                bool>[] Comparers
+            )[] rules,
+            IEnumerable<(string, string)> expectedXpaths,
+            string message)
+        {
+            //  #   Arrange.
+            Func<string, XElement> toElement = (string xpath) =>
+             {
+                 var elementString = xpath.Split('/').Last();
+                 var matches = Regex.Match(elementString, @"(.*)\[(.*)\]");
+                 var name = matches.Groups[1].Value;
+                 var attributesString = matches.Groups[2].Value;
+                 var attributesStrings = attributesString.Split("and");
+                 var attributes = attributesStrings
+                    .Select(x =>
+                    {
+var nameValuePair = x.Split("=");
+                        return (
+                            name: nameValuePair.First().Trim().TrimStart('@').Trim(),
+                            value: nameValuePair.Last().Trim().TrimStart('\'').TrimEnd('\'')
+                        );
+                    });
+                 var ret = new XElement(
+name,
+attributes.Select(a => new XAttribute(a.name, a.value)));
+                 return ret;
+             };
+            Func<IEnumerable<(string FirstXpath, string SecondXpath)>, IEnumerable<Similar>> toSimilars =xpaths =>
+            {
+                return xpaths
+                    .Select(ex => Similar.Create(
+                        toElement(ex.FirstXpath),
+                        ex.FirstXpath,
+                        toElement(ex.SecondXpath),
+                        ex.SecondXpath)
+                    );
+            };
+
+            //  #   Act.
+            var res = Logic.FindSimilars(doc, rules);
+
+            //  #   Assert.
+            res.Should().BeEquivalentTo(toSimilars(expectedXpaths), message);
+
+            Assert.Fail("TBA:Refine with type of similarity and also multiple in result.");
+        }
+
         [TestMethod]
         public void CanReturnListWithAllPropertiesSet()
         {
