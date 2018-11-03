@@ -175,12 +175,7 @@ namespace LehmanLaidun.FileSystem.Test
             XDocument doc,
             (
                 string RuleName,
-                Func<
-                (
-                    XElement FirstElement,
-                    XElement SecondElement
-                ),
-                bool>[] Comparers
+                Logic.ComparerDelegate[] Comparers
             )[] rules,
             IEnumerable<(string, string)> expectedXpaths,
             string message)
@@ -224,7 +219,7 @@ attributes.Select(a => new XAttribute(a.name, a.value)));
             //  #   Assert.
             res.Should().BeEquivalentTo(toSimilars(expectedXpaths), message);
 
-            //Assert.Fail("TBA:Refine with type of similarity and also multiple in result.");
+            Assert.Fail("TBA:Refine with type of similarity and also multiple in result.");
         }
 
         [TestMethod]

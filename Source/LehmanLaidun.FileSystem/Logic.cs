@@ -14,6 +14,12 @@ namespace LehmanLaidun.FileSystem
 
         public string Path { get; }
 
+        public delegate bool ComparerDelegate(
+            XElement FirstElement,
+            XElement SecondElement
+        );
+
+
         /// <summary>This static constructor is the prefered.
         /// </summary>
         /// <param name="fileSystem"></param>
@@ -124,10 +130,7 @@ namespace LehmanLaidun.FileSystem
             XDocument doc,
             (
                 string RuleName,
-                Func<(
-                    XElement FirstElement,
-                    XElement SecondElement),
-                    bool>[] Comparers
+                ComparerDelegate[] Comparers
             )[] rules
         )
         {
@@ -145,7 +148,7 @@ namespace LehmanLaidun.FileSystem
                         foreach (var rule in rules)
                         {
                             var ruleName = rule.RuleName;
-                            if (rule.Comparers.All(c => c((FirstElement: firstElement, SecondElement: secondElement))))
+                            if (rule.Comparers.All(c => c(FirstElement: firstElement, SecondElement: secondElement)))
                             {
                                 yield return Similar.Create(firstElement.ShallowCopy(), GetXPathOf(firstElement), secondElement.ShallowCopy(), GetXPathOf(secondElement));
                             }

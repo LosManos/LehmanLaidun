@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Xml.Linq;
 using static LehmanLaidun.FileSystem.Difference;
 
@@ -87,12 +85,7 @@ namespace LehmanLaidun.FileSystem.Test
                     @"<root/>",
                     new (
                         string,
-                        Func<
-                            (
-                                XElement,
-                                XElement
-                            ),
-                            bool>[]
+                        Logic.ComparerDelegate[]
                     )[] { },
                     new (string, string)[] { },
                     "No similaries found in an empty input."
@@ -112,20 +105,15 @@ namespace LehmanLaidun.FileSystem.Test
                     new[] {
                         (
                         "Just a single arbitrary rule - Equal Name but different Size",
-                        new Func<
-                            (
-                                XElement FirstElement,
-                                XElement SecondElement
-                            ),
-                            bool>[] {
-                            comparer => {
+                        new Logic.ComparerDelegate [] {
+                            (firstElement, secondElement) => {
                                 return
-                                    comparer.FirstElement.Name != "d" &&
-                                    comparer.SecondElement.Name != "d" &&
-                                    comparer.FirstElement.Attribute("Name").Value ==
-                                    comparer.SecondElement.Attribute("Name").Value &&
-                                    comparer.FirstElement.Attribute("Size").Value !=
-                                    comparer.SecondElement.Attribute("Size").Value;
+                                    firstElement.Name != "d" &&
+                                    secondElement.Name != "d" &&
+                                    firstElement.Attribute("Name").Value ==
+                                    secondElement.Attribute("Name").Value &&
+                                    firstElement.Attribute("Size").Value !=
+                                    secondElement.Attribute("Size").Value;
                             }
                         }
                     )   },
@@ -150,35 +138,25 @@ namespace LehmanLaidun.FileSystem.Test
                   new[] {
                         (
                             "An arbitrary rule - any element with a n=b tag.",
-                            new Func<
-                                (
-                                    XElement FirstElement,
-                                    XElement SecondElement
-                                ),
-                                bool>[] {
-                                comparer => {
+                            new Logic.ComparerDelegate [] {
+                                (firstElement, secondElement ) => {
                                     return 
-                                        comparer.FirstElement.Name == "f" &&
-                                        comparer.SecondElement.Name == "f" &&
-                                        comparer.FirstElement.Attribute("n")?.Value == "b" &&
-                                        comparer.SecondElement.Attribute("n")?.Value == "b";
+                                        firstElement.Name == "f" &&
+                                        secondElement.Name == "f" &&
+                                        firstElement.Attribute("n")?.Value == "b" &&
+                                        secondElement.Attribute("n")?.Value == "b";
                                 }
                             }
                         ), 
                         (
                             "An arbitrary rule - any element with a c tag.",
-                            new Func<
-                                (
-                                    XElement FirstElement,
-                                    XElement SecondElement
-                                ),
-                                bool>[] {
-                                comparer => {
+                            new Logic.ComparerDelegate [] {
+                                (firstElement, secondElement) => {
                                     return
-                                        comparer.FirstElement.Name == "f" &&
-                                        comparer.SecondElement.Name == "f" &&
-                                        comparer.FirstElement.Attribute("n")?.Value == "c" &&
-                                        comparer.SecondElement.Attribute("n")?.Value == "c";
+                                        firstElement.Name == "f" &&
+                                        secondElement.Name == "f" &&
+                                        firstElement.Attribute("n")?.Value == "c" &&
+                                        secondElement.Attribute("n")?.Value == "c";
                                 }
                             }
                         )
@@ -199,21 +177,6 @@ namespace LehmanLaidun.FileSystem.Test
             internal IEnumerable<Difference> Differences { get; }
             internal string Message { get; }
 
-            [Obsolete("Replace with the one taking [message] as first argument", false)]
-            internal CanCompareXmlTestDataClass(string firstXml, string secondXml, Difference difference, string message)
-                : this(firstXml, secondXml, new[] { difference }, message)
-            {
-            }
-
-            [Obsolete("Replace with the one taking [message] as first argument", false)]
-            private CanCompareXmlTestDataClass(string firstXml, string secondXml, IEnumerable<Difference> differences, string message)
-            {
-                FirstXml = firstXml;
-                SecondXml = secondXml;
-                Differences = differences;
-                Message = message;
-            }
-
             internal CanCompareXmlTestDataClass(
                 string message,
                 string firstXml,
@@ -232,12 +195,7 @@ namespace LehmanLaidun.FileSystem.Test
             internal XDocument Xml { get; private set; }
             internal (
                 string RuleName,
-                Func<
-                (
-                    XElement FirstElement,
-                    XElement SecondElement
-                ),
-                bool>[] Comparers 
+                Logic.ComparerDelegate[] Comparers 
             )[] Rules{ get; private set; }
             internal IEnumerable<(string,string)> ExpectedXPaths { get; private set; }
             internal string Message { get; private set; }
@@ -246,12 +204,7 @@ namespace LehmanLaidun.FileSystem.Test
                 string xmlString,
                 (
                     string ruleName,
-                    Func<
-                        (
-                            XElement FirstElement,
-                            XElement SecondElement
-                        ),
-                        bool>[] comparers
+                    Logic.ComparerDelegate[] comparers
                 )[] rules,
                 IEnumerable<(string,string)> expectedXPaths,
                 string message
@@ -268,12 +221,7 @@ namespace LehmanLaidun.FileSystem.Test
                 string xmlString,
                 (
                     string ruleName,
-                    Func<
-                        (
-                            XElement FirstElement,
-                            XElement SecondElement
-                        ),
-                        bool>[] comparers
+                    Logic.ComparerDelegate[] comparers
                 )[] rules,
                 IEnumerable<(string,string)> expectedXpaths,
                 string message)
