@@ -194,19 +194,19 @@ namespace LehmanLaidun.FileSystem.Test
 
         private class CanCompareXmlTestDataClass
         {
-            public string FirstXml { get; }
-            public string SecondXml { get; }
-            public IEnumerable<Difference> Differences { get; }
-            public string Message { get; }
+            internal string FirstXml { get; }
+            internal string SecondXml { get; }
+            internal IEnumerable<Difference> Differences { get; }
+            internal string Message { get; }
 
             [Obsolete("Replace with the one taking [message] as first argument", false)]
-            public CanCompareXmlTestDataClass(string firstXml, string secondXml, Difference difference, string message)
+            internal CanCompareXmlTestDataClass(string firstXml, string secondXml, Difference difference, string message)
                 : this(firstXml, secondXml, new[] { difference }, message)
             {
             }
 
             [Obsolete("Replace with the one taking [message] as first argument", false)]
-            public CanCompareXmlTestDataClass(string firstXml, string secondXml, IEnumerable<Difference> differences, string message)
+            private CanCompareXmlTestDataClass(string firstXml, string secondXml, IEnumerable<Difference> differences, string message)
             {
                 FirstXml = firstXml;
                 SecondXml = secondXml;
@@ -214,7 +214,7 @@ namespace LehmanLaidun.FileSystem.Test
                 Message = message;
             }
 
-            public CanCompareXmlTestDataClass(
+            internal CanCompareXmlTestDataClass(
                 string message,
                 string firstXml,
                 string secondXml,
