@@ -180,24 +180,21 @@ namespace LehmanLaidun.FileSystem.Test
             //  #   Arrange.
             Func<string, XElement> toElement = (string xpath) =>
              {
-                 var elementString = xpath.Split('/').Last();
-                 var matches = Regex.Match(elementString, @"(.*)\[(.*)\]");
+                 var lastElementString = xpath.Split('/').Last();
+                 var matches = Regex.Match(lastElementString, @"(.*)\[(.*)\]");
                  var name = matches.Groups[1].Value;
-                 var attributesString = matches.Groups[2].Value;
-                 var attributesStrings = attributesString.Split("and");
-                 var attributes = attributesStrings
+                 var attributes = matches.Groups[2].Value.Split("and")
                     .Select(x =>
                     {
-var nameValuePair = x.Split("=");
+                        var nameValuePair = x.Split("=");
                         return (
                             name: nameValuePair.First().Trim().TrimStart('@').Trim(),
                             value: nameValuePair.Last().Trim().TrimStart('\'').TrimEnd('\'')
                         );
                     });
-                 var ret = new XElement(
-name,
-attributes.Select(a => new XAttribute(a.name, a.value)));
-                 return ret;
+                 return new XElement(
+                    name,
+                    attributes.Select(a => new XAttribute(a.name, a.value)));
              };
             Func<IEnumerable<(string FirstXpath, string SecondXpath)>, IEnumerable<Similar>> toSimilars =xpaths =>
             {
