@@ -77,6 +77,69 @@ namespace LehmanLaidun.FileSystem.Test
             }
         }
 
+        private static IEnumerable<object[]> DuplicateTestData
+        {
+            get
+            {
+                yield return DuplicateTestDataClass.Create(
+                    @"<root/>",
+                    new DuplicateTestDataClass.ElementAndXPaths[0],
+                    "No duplicate in simple root.")
+                    .ToObjectArray();
+
+                yield return DuplicateTestDataClass.Create(
+                    @"
+                    <root>
+                        <d n='a'>
+                            <f n='a'/>
+                            <f n='b'/>
+                        </d>
+                        <d n='b'>
+                            <f n='a'/>
+                            <f n='c'/>
+                        </d>
+                    </root>",
+                    new[]
+                    {
+                        DuplicateTestDataClass.ElementAndXPaths.Create(
+                            @"<f n='a'/>",
+                            new[]{
+                                @"/root/d[@n='a']/f[@n='a']",
+                                @"/root/d[@n='b']/f[@n='a']"
+                            }
+                        )
+                    },
+                    "Duplicate files found in sibling directories.")
+                    .ToObjectArray();
+
+                yield return DuplicateTestDataClass.Create(
+                    @"
+                    <root>
+                        <d n='a'>
+                            <f n='a'/>
+                            <f n='c'/>
+                            <d n='b'>
+                                <f n='b'/>
+                                <f n='a'/>
+                            </d>
+                        </d>
+                    </root>",
+                    new[]
+                    {
+                        DuplicateTestDataClass.ElementAndXPaths.Create
+                        (
+                            @"<f n='a'/>",
+                            new[]{
+                                @"/root/d[@n='a']/f[@n='a']",
+                                @"/root/d[@n='a']/d[@n='b']/f[@n='a']"
+                            }
+                        )
+                    },
+                    "Duplicate files found in parent/child directories.")
+                    .ToObjectArray();
+                }
+        }
+
         private static IEnumerable<object[]> SimilarTestData
         {
             get
@@ -114,7 +177,7 @@ namespace LehmanLaidun.FileSystem.Test
                             }
                         }
                     )   },
-                    new (string,string)[]{
+                    new (string, string)[]{
                         (@"/root/d[@Name='a']/f[@Name='b' and @Size='12']",
                         @"/root/d[@Name='c']/f[@Name='b' and @Size='13']")
                     },
@@ -137,7 +200,7 @@ namespace LehmanLaidun.FileSystem.Test
                             "An arbitrary rule - any element with a n=b tag.",
                             new Logic.Rule.ComparerDelegate [] {
                                 (firstElement, secondElement ) => {
-                                    return 
+                                    return
                                         firstElement.Name == "f" &&
                                         secondElement.Name == "f" &&
                                         firstElement.Attribute("n")?.Value == "b" &&
@@ -158,7 +221,7 @@ namespace LehmanLaidun.FileSystem.Test
                             }
                         )
                   },
-                    new (string,string)[]{
+                    new (string, string)[]{
                         (@"/root/d[@n='a']/f[@n='c' and @s='123']",
                         @"/root/d[@n='c']/f[@n='c' and @s='13']")
                     },
@@ -187,17 +250,61 @@ namespace LehmanLaidun.FileSystem.Test
             }
         }
 
-        internal class SimilarTestDataClass
+        public class DuplicateTestDataClass
+        {
+            public class ElementAndXPaths
+            {
+                internal string ElementString { get; }
+                internal IEnumerable<string> Xpaths { get; }
+                internal static ElementAndXPaths Create(string elementString, IEnumerable<string> xpaths)
+                {
+                    return new ElementAndXPaths(elementString, xpaths);
+                }
+                private ElementAndXPaths(string elementString, IEnumerable<string> xpaths)
+                {
+                    ElementString = elementString;
+                    Xpaths = xpaths;
+                }
+            }
+
+            internal ElementAndXPaths[] ElementStringAndXPaths { get; }
+            internal string Message { get; }
+            internal string Xml { get; }
+
+            internal static DuplicateTestDataClass Create(string xml, ElementAndXPaths[] elementStringAndXPaths, string message)
+            {
+                return new DuplicateTestDataClass(xml, elementStringAndXPaths, message);
+            }
+
+            internal object[] ToObjectArray()
+            {
+                return new object[]
+                {
+                    Xml,
+                    ElementStringAndXPaths,
+                    Message
+                };
+            }
+
+            private DuplicateTestDataClass(string xml, ElementAndXPaths[] elementStringAndXPaths, string message)
+            {
+                Xml = xml;
+                ElementStringAndXPaths = elementStringAndXPaths;
+                Message = message;
+            }
+        }
+
+        private class SimilarTestDataClass
         {
             internal XDocument Xml { get; private set; }
-            internal Logic.Rule[] Rules{ get; private set; }
-            internal IEnumerable<(string,string)> ExpectedXPaths { get; private set; }
+            internal Logic.Rule[] Rules { get; private set; }
+            internal IEnumerable<(string, string)> ExpectedXPaths { get; private set; }
             internal string Message { get; private set; }
 
             internal static SimilarTestDataClass Create(
                 string xmlString,
                 Logic.Rule[] rules,
-                IEnumerable<(string,string)> expectedXPaths,
+                IEnumerable<(string, string)> expectedXPaths,
                 string message
                 )
             {
@@ -208,11 +315,11 @@ namespace LehmanLaidun.FileSystem.Test
                     message);
             }
 
-        private SimilarTestDataClass(
-                string xmlString,
-                Logic.Rule[] rules,
-                IEnumerable<(string,string)> expectedXpaths,
-                string message)
+            private SimilarTestDataClass(
+                    string xmlString,
+                    Logic.Rule[] rules,
+                    IEnumerable<(string, string)> expectedXpaths,
+                    string message)
             {
                 Xml = XDocument.Parse(xmlString);
                 ExpectedXPaths = expectedXpaths;

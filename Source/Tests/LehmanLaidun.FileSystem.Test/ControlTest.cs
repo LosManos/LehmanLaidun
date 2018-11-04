@@ -100,60 +100,14 @@ namespace LehmanLaidun.FileSystem.Test
         }
 
         [TestMethod]
-        [DataRow(@"<root/>",
-            new object[0],
-            "No duplicate in simple root.")]
-        [DataRow(@"
-            <root>
-                <d n='a'>
-                    <f n='a'/>
-                    <f n='b'/>
-                </d>
-                <d n='b'>
-                    <f n='a'/>
-                    <f n='c'/>
-                </d>
-            </root>",
-            new object[]
-            {
-                new []{
-                    @"<f n='a'/>",
-                    @"/root/d[@n='a']/f[@n='a']",
-                    @"/root/d[@n='b']/f[@n='a']",
-                }
-            },
-            "Duplicate files found in sibling directories.")]
-        [DataRow(@"
-            <root>
-                <d n='a'>
-                    <f n='a'/>
-                    <f n='c'/>
-                    <d n='b'>
-                        <f n='b'/>
-                        <f n='a'/>
-                    </d>
-                </d>
-            </root>",
-            new object[]
-            {
-                new[]
-                {
-                    @"<f n='a'/>",
-                    @"/root/d[@n='a']/f[@n='a']",
-                    @"/root/d[@n='a']/d[@n='b']/f[@n='a']",
-                }
-            },
-            "Duplicate files found in parent/child directories.")]
-        public void CanFindDuplicates_ReturnAllDuplicates(string xmlString, object[] expecteds, string message)
+        [DynamicData(nameof(DuplicateTestData))]
+        public void CanFindDuplicates_ReturnAllDuplicates(
+            string xmlString, 
+            DuplicateTestDataClass.ElementAndXPaths[] expecteds, 
+            string message)
         {
             //  #   Arrange.
             var doc = XDocument.Parse(xmlString);
-            Func<IEnumerable<string>, (XElement element, IEnumerable<string> xpaths)> getElementAndSXpaths = stringList =>
-             {
-                 var element = XDocument.Parse(stringList.First()).Root;
-                 var xpaths = stringList.Skip(1);
-                 return (element: element, xpaths: xpaths);
-             };
 
             //  #   Act.
             var res = Logic.FindDuplicates(doc);
@@ -162,8 +116,8 @@ namespace LehmanLaidun.FileSystem.Test
             var expectedDuplicates = expecteds
                 .Select(expected =>
                 {
-                    (var element, var xpaths) = getElementAndSXpaths((string[])expected);
-                    return Duplicate.Create(element, xpaths);
+                    var element = XDocument.Parse(expected.ElementString).Root;
+                    return Duplicate.Create(element, expected.Xpaths);
                 });
 
             res.Should().BeEquivalentTo(expectedDuplicates, message);
