@@ -102,7 +102,7 @@ namespace LehmanLaidun.FileSystem.Test
                     new[] {
                         Logic.Rule.Create(
                         "Just a single arbitrary rule - Equal Name but different Size",
-                        new Logic.ComparerDelegate [] {
+                        new Logic.Rule.ComparerDelegate [] {
                             (firstElement, secondElement) => {
                                 return
                                     firstElement.Name != "d" &&
@@ -135,7 +135,7 @@ namespace LehmanLaidun.FileSystem.Test
                   new[] {
                         Logic.Rule.Create(
                             "An arbitrary rule - any element with a n=b tag.",
-                            new Logic.ComparerDelegate [] {
+                            new Logic.Rule.ComparerDelegate [] {
                                 (firstElement, secondElement ) => {
                                     return 
                                         firstElement.Name == "f" &&
@@ -147,7 +147,7 @@ namespace LehmanLaidun.FileSystem.Test
                         ),
                         Logic.Rule.Create(
                             "An arbitrary rule - any element with a c tag.",
-                            new Logic.ComparerDelegate [] {
+                            new Logic.Rule.ComparerDelegate [] {
                                 (firstElement, secondElement) => {
                                     return
                                         firstElement.Name == "f" &&

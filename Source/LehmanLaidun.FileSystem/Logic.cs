@@ -14,13 +14,13 @@ namespace LehmanLaidun.FileSystem
 
         public string Path { get; }
 
-        public delegate bool ComparerDelegate(
-            XElement FirstElement,
-            XElement SecondElement
-        );
-
         public class Rule
         {
+            public delegate bool ComparerDelegate(
+                XElement FirstElement,
+                XElement SecondElement
+            );
+
             public IEnumerable<ComparerDelegate> Comparers { get; }
             public string RuleName { get; }
 
