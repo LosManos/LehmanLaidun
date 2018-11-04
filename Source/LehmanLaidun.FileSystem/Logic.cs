@@ -19,6 +19,22 @@ namespace LehmanLaidun.FileSystem
             XElement SecondElement
         );
 
+        public class Rule
+        {
+            public IEnumerable<ComparerDelegate> Comparers { get; }
+            public string RuleName { get; }
+
+            public static Rule Create(string ruleName, IEnumerable<ComparerDelegate> comparers)
+            {
+                return new Rule(ruleName, comparers);
+            }
+
+            private Rule(string ruleName, IEnumerable<ComparerDelegate> comparers)
+            {
+                RuleName = ruleName;
+                Comparers = comparers;
+            }
+        }
 
         /// <summary>This static constructor is the prefered.
         /// </summary>
@@ -128,10 +144,7 @@ namespace LehmanLaidun.FileSystem
         /// <returns></returns>
         public static IEnumerable<Similar> FindSimilars(
             XDocument doc,
-            (
-                string RuleName,
-                ComparerDelegate[] Comparers
-            )[] rules
+            IEnumerable<Rule> rules
         )
         {
             if (rules == null) { throw new ArgumentNullException(nameof(rules)); }

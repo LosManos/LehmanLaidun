@@ -83,10 +83,7 @@ namespace LehmanLaidun.FileSystem.Test
             {
                 yield return SimilarTestDataClass.Create(
                     @"<root/>",
-                    new (
-                        string,
-                        Logic.ComparerDelegate[]
-                    )[] { },
+                    new Logic.Rule[] { },
                     new (string, string)[] { },
                     "No similaries found in an empty input."
                 ).ToObjectArray();
@@ -103,7 +100,7 @@ namespace LehmanLaidun.FileSystem.Test
                         </d>
                     </root>",
                     new[] {
-                        (
+                        Logic.Rule.Create(
                         "Just a single arbitrary rule - Equal Name but different Size",
                         new Logic.ComparerDelegate [] {
                             (firstElement, secondElement) => {
@@ -136,7 +133,7 @@ namespace LehmanLaidun.FileSystem.Test
                         </d>
                     </root>",
                   new[] {
-                        (
+                        Logic.Rule.Create(
                             "An arbitrary rule - any element with a n=b tag.",
                             new Logic.ComparerDelegate [] {
                                 (firstElement, secondElement ) => {
@@ -147,8 +144,8 @@ namespace LehmanLaidun.FileSystem.Test
                                         secondElement.Attribute("n")?.Value == "b";
                                 }
                             }
-                        ), 
-                        (
+                        ),
+                        Logic.Rule.Create(
                             "An arbitrary rule - any element with a c tag.",
                             new Logic.ComparerDelegate [] {
                                 (firstElement, secondElement) => {
@@ -193,19 +190,13 @@ namespace LehmanLaidun.FileSystem.Test
         internal class SimilarTestDataClass
         {
             internal XDocument Xml { get; private set; }
-            internal (
-                string RuleName,
-                Logic.ComparerDelegate[] Comparers 
-            )[] Rules{ get; private set; }
+            internal Logic.Rule[] Rules{ get; private set; }
             internal IEnumerable<(string,string)> ExpectedXPaths { get; private set; }
             internal string Message { get; private set; }
 
             internal static SimilarTestDataClass Create(
                 string xmlString,
-                (
-                    string ruleName,
-                    Logic.ComparerDelegate[] comparers
-                )[] rules,
+                Logic.Rule[] rules,
                 IEnumerable<(string,string)> expectedXPaths,
                 string message
                 )
@@ -219,10 +210,7 @@ namespace LehmanLaidun.FileSystem.Test
 
         private SimilarTestDataClass(
                 string xmlString,
-                (
-                    string ruleName,
-                    Logic.ComparerDelegate[] comparers
-                )[] rules,
+                Logic.Rule[] rules,
                 IEnumerable<(string,string)> expectedXpaths,
                 string message)
             {
