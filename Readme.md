@@ -61,3 +61,23 @@ There is a a skeleton of a console application that compare two folder structure
 	foreach( var diff in differences ){
 		Console.WriteLine( ... )
 	}
+
+### Find all similar, "almost duplicates" elements in an xml.
+
+	var doc = XDocument.Parse(xmlString);
+	var similars = Logic.FindSimilars(
+		doc, 
+		new[]{
+			Logic.Rule.Create( 
+				"Same size", 
+				new Logic.Rule.CompareDelegate[]{
+					(element1, element2) =>
+						element1.Attribute("Size")?.Value == element2.Attribute("Size")?.Value;
+				}
+			}
+		}
+	);
+
+	foreach( var similar in similars ){
+		Console.WriteLine(...).
+	}
