@@ -85,18 +85,19 @@ namespace LehmanLaidun.FileSystem.Test
         }
 
         [TestMethod]
-        public void CanCompareXml_ReturnNotEqualAndDIfferences()
+        [DynamicData(nameof(CanCompareXmlTestData))]
+        public void CanCompareXml_ReturnNotEqualAndDIfferences(
+            string firstXml, 
+            string secondXml, 
+            IEnumerable<Difference>differences, 
+            string message)
         {
-            foreach (var testDatum in CanCompareXmlTestData)
-            {
-                //  #   Act.
-                var res = Logic.CompareXml(XDocument.Parse(testDatum.FirstXml), XDocument.Parse(testDatum.SecondXml));
+            //  #   Act.
+            var res = Logic.CompareXml(XDocument.Parse(firstXml), XDocument.Parse(secondXml));
 
-                //  #   Assert.
-                res.Result.Should().BeFalse("The comparision should have failed." + testDatum.Message);
-                Assert_Differences(res.Differences, testDatum);
-
-            }
+            //  #   Assert.
+            res.Result.Should().BeFalse("The comparision should have failed." + message);
+            Assert_Differences(res.Differences, CanCompareXmlTestDataClass.Create(message, firstXml, secondXml, differences.ToArray()));
         }
 
         [TestMethod]
@@ -242,7 +243,7 @@ namespace LehmanLaidun.FileSystem.Test
 
         [DataTestMethod]
         [DataRow(@"
-            <root>
+            <root>l
                 <b a='a'>
                     <bb a='a'/>
                 </b>
@@ -304,7 +305,9 @@ namespace LehmanLaidun.FileSystem.Test
 
         #region Helper methods.
 
-        private static void Assert_Differences(IEnumerable<Difference> actualDifferences, CanCompareXmlTestDataClass expectedTestDatum)
+        private static void Assert_Differences
+            (IEnumerable<Difference> actualDifferences, 
+            CanCompareXmlTestDataClass expectedTestDatum)
         {
             foreach (var diff in actualDifferences)
             {

@@ -1,79 +1,78 @@
 ﻿using System.Collections.Generic;
 using System.Xml.Linq;
-using static LehmanLaidun.FileSystem.Difference;
 
 namespace LehmanLaidun.FileSystem.Test
 {
     partial class ControlTest
     {
-        private IEnumerable<CanCompareXmlTestDataClass> CanCompareXmlTestData
+        private static IEnumerable<object[]> CanCompareXmlTestData
         {
             get
             {
                 // Indata with stuff found only in the *first* tree.
                 //
-                yield return new CanCompareXmlTestDataClass(
+                yield return CanCompareXmlTestDataClass.Create(
                     "The element should be found only in the first tree.",
                     "<root><a/></root>",
                     "<root></root>",
-                    Difference.Create(new XElement("a"), "/root/a[not(@*)]", FoundOnlyIn.First)
-                );
-                yield return new CanCompareXmlTestDataClass(
+                    Difference.Create(new XElement("a"), "/root/a[not(@*)]", Difference.FoundOnlyIn.First)
+                ).ToObjectArray();
+                yield return CanCompareXmlTestDataClass.Create(
                     "The inner element should be found only in the first tree.",
                     "<root><a><b/></a></root>",
                     "<root><a/></root>",
-                    Difference.Create(new XElement("b"), "/root/a[not(@*)]/b[not(@*)]", FoundOnlyIn.First)
-                );
-                yield return new CanCompareXmlTestDataClass(
+                    Difference.Create(new XElement("b"), "/root/a[not(@*)]/b[not(@*)]", Difference.FoundOnlyIn.First)
+                ).ToObjectArray();
+                yield return CanCompareXmlTestDataClass.Create(
                     "Element with attributes differs from one without. The attributes are in the first tree.",
                     "<root><a b='c'/></root>",
                     "<root><a/></root>",
-                    Difference.Create(new XElement("a", new XAttribute("b", "c")), "/root/a[@b='c']", FoundOnlyIn.First),
-                    Difference.Create(new XElement("a"), "/root/a[not(@*)]", FoundOnlyIn.Second)
-                );
-                yield return new CanCompareXmlTestDataClass(
+                    Difference.Create(new XElement("a", new XAttribute("b", "c")), "/root/a[@b='c']", Difference.FoundOnlyIn.First),
+                    Difference.Create(new XElement("a"), "/root/a[not(@*)]", Difference.FoundOnlyIn.Second)
+                ).ToObjectArray();
+                yield return CanCompareXmlTestDataClass.Create(
                     "The sequence elements should be found only in the first tree.",
                     "<root><a/><b/></root>",
                     "<root></root>",
-                        Difference.Create(new XElement("a"), "/root/a[not(@*)]", FoundOnlyIn.First),
-                        Difference.Create(new XElement("b"), "/root/b[not(@*)]", FoundOnlyIn.First)
-                );
+                        Difference.Create(new XElement("a"), "/root/a[not(@*)]", Difference.FoundOnlyIn.First),
+                        Difference.Create(new XElement("b"), "/root/b[not(@*)]", Difference.FoundOnlyIn.First)
+                ).ToObjectArray();
 
                 //  Testdata with stuff found only in the *second* tree.
                 //
-                yield return new CanCompareXmlTestDataClass(
+                yield return CanCompareXmlTestDataClass.Create(
                     "The element should be found only in the second tree.",
                     "<root></root>",
                     "<root><a/></root>",
-                    Difference.Create(new XElement("a"), "/root/a[not(@*)]", FoundOnlyIn.Second)
-                );
-                yield return new CanCompareXmlTestDataClass(
+                    Difference.Create(new XElement("a"), "/root/a[not(@*)]", Difference.FoundOnlyIn.Second)
+                ).ToObjectArray();
+                yield return CanCompareXmlTestDataClass.Create(
                     "The inner element should be found only in the second tree.",
                     "<root><a/></root>",
                     "<root><a><b/></a></root>",
-                    Difference.Create(new XElement("b"), "/root/a[not(@*)]/b[not(@*)]", FoundOnlyIn.Second)
-                    );
-                yield return new CanCompareXmlTestDataClass(
+                    Difference.Create(new XElement("b"), "/root/a[not(@*)]/b[not(@*)]", Difference.FoundOnlyIn.Second)
+                ).ToObjectArray();
+                yield return CanCompareXmlTestDataClass.Create(
                     "The element with attributes should be found only in the second tree.",
                     "<root><a/></root>",
                     "<root><a b='c'/></root>",
-                    Difference.Create(new XElement("a"), "/root/a[not(@*)]", FoundOnlyIn.First),
-                    Difference.Create(new XElement("a", new XAttribute("b", "c")), "/root/a[@b='c']", FoundOnlyIn.Second)
-                );
-                yield return new CanCompareXmlTestDataClass(
+                    Difference.Create(new XElement("a"), "/root/a[not(@*)]", Difference.FoundOnlyIn.First),
+                    Difference.Create(new XElement("a", new XAttribute("b", "c")), "/root/a[@b='c']", Difference.FoundOnlyIn.Second)
+                ).ToObjectArray();
+                yield return CanCompareXmlTestDataClass.Create(
                     "The elements should be found only in the second tree.",
                     "<root></root>",
                     "<root><a/><b/></root>",
-                    Difference.Create(new XElement("a"), "/root/a[not(@*)]", FoundOnlyIn.Second),
-                    Difference.Create(new XElement("b"), "/root/b[not(@*)]", FoundOnlyIn.Second)
-                );
-                yield return new CanCompareXmlTestDataClass(
+                    Difference.Create(new XElement("a"), "/root/a[not(@*)]", Difference.FoundOnlyIn.Second),
+                    Difference.Create(new XElement("b"), "/root/b[not(@*)]", Difference.FoundOnlyIn.Second)
+                ).ToObjectArray();
+                yield return CanCompareXmlTestDataClass.Create(
                     "Elements with only attributes differing should be found.",
                     "<root><a b='c'/></root>",
                     "<root><a d='e'/></root>",
-                    Difference.Create(new XElement("a", new XAttribute("b", "c")), "/root/a[@b='c']", FoundOnlyIn.First),
-                    Difference.Create(new XElement("a", new XAttribute("d", "e")), "/root/a[@d='e']", FoundOnlyIn.Second)
-                );
+                    Difference.Create(new XElement("a", new XAttribute("b", "c")), "/root/a[@b='c']", Difference.FoundOnlyIn.First),
+                    Difference.Create(new XElement("a", new XAttribute("d", "e")), "/root/a[@d='e']", Difference.FoundOnlyIn.Second)
+                ).ToObjectArray();
             }
         }
 
@@ -237,7 +236,16 @@ namespace LehmanLaidun.FileSystem.Test
             internal IEnumerable<Difference> Differences { get; }
             internal string Message { get; }
 
-            internal CanCompareXmlTestDataClass(
+            internal static CanCompareXmlTestDataClass Create(
+                string message,
+                string firstXml,
+                string secondXml,
+                params Difference[] differences)
+            {
+                return new CanCompareXmlTestDataClass(message, firstXml, secondXml, differences);
+            }
+
+            private CanCompareXmlTestDataClass(
                 string message,
                 string firstXml,
                 string secondXml,
@@ -247,6 +255,17 @@ namespace LehmanLaidun.FileSystem.Test
                 FirstXml = firstXml;
                 SecondXml = secondXml;
                 Differences = differences;
+            }
+
+            internal object[] ToObjectArray()
+            {
+                return new object[]
+                {
+                    FirstXml,
+                    SecondXml,
+                    Differences,
+                    Message
+                };
             }
         }
 
