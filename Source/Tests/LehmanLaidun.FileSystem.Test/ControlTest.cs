@@ -13,67 +13,7 @@ namespace LehmanLaidun.FileSystem.Test
     public partial class ControlTest
     {
         [DataTestMethod]
-        [DataRow(@"<root/>", @"<root/>", "A simple root should be equal to itself.")]
-        [DataRow(@"<root a='b'/>", @"<root/>", "The attributes of the root does not matter.")]
-        [DataRow(@"<root/>", @"<root></root>", "Elements can be both simple and complex. (what is it called?)")]
-        [DataRow(@"
-<root>
-    <directory/>;
-</root>", @"
-<root>
-    <directory></directory>
-</root>",
-            "Sub-root element can be both simple and complex. (what is it called?)"
-            )]
-        [DataRow(@"
-<root>
-    <a/>
-    <b/>
-</root>", @"
-<root>
-    <b/>
-    <a/>
-</root>",
-            "The ordering of the elements does not care."
-            )]
-        [DataRow(@"
-<root>
-    <a b='c' d='e'/>
-</root>", @"
-<root>
-    <a d='e' b='c'/>
-</root>",
-            "The ordering of the attributes does note care."
-            )]
-        [DataRow(@"
-<root>
-    <a/>
-    <b c='d' e='f'/>
-</root>", @"
-<root>
-    <b e='f' c='d'/>
-    <a/>
-</root>",
-            "Neither the ordering of the elements nore the attributes care."
-            )]
-        [DataRow(@"
-<root>
-    <a>
-        <b/>
-    </a>
-    <c>
-        <d/>
-    </c>
-</root>", @"
-<root>
-    <c>
-        <d/>
-    </c>
-    <a>
-        <b/>
-    </a>
-</root>",
-            "The ordering of sub elements does not care.")]
+        [DynamicData(nameof(CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucureTestData))]
         public void CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucure(string xml1, string xml2, string message)
         {
             //  #   Act.
@@ -85,7 +25,7 @@ namespace LehmanLaidun.FileSystem.Test
         }
 
         [TestMethod]
-        [DynamicData(nameof(CanCompareXmlTestData))]
+        [DynamicData(nameof(CanCompareXml_ReturnNotEqualAndDIfferencesTestData))]
         public void CanCompareXml_ReturnNotEqualAndDIfferences(
             string firstXml, 
             string secondXml, 
@@ -97,7 +37,7 @@ namespace LehmanLaidun.FileSystem.Test
 
             //  #   Assert.
             res.Result.Should().BeFalse("The comparision should have failed." + message);
-            Assert_Differences(res.Differences, CanCompareXmlTestDataClass.Create(message, firstXml, secondXml, differences.ToArray()));
+            Assert_Differences(res.Differences, CanCompareXml_ReturnNotEqualAndDIfferencesTestDataClass.Create(message, firstXml, secondXml, differences.ToArray()));
         }
 
         [TestMethod]
@@ -307,7 +247,7 @@ namespace LehmanLaidun.FileSystem.Test
 
         private static void Assert_Differences
             (IEnumerable<Difference> actualDifferences, 
-            CanCompareXmlTestDataClass expectedTestDatum)
+            CanCompareXml_ReturnNotEqualAndDIfferencesTestDataClass expectedTestDatum)
         {
             foreach (var diff in actualDifferences)
             {
