@@ -182,58 +182,7 @@ namespace LehmanLaidun.FileSystem.Test
         }
 
         [DataTestMethod]
-        [DataRow(@"
-            <root>l
-                <b a='a'>
-                    <bb a='a'/>
-                </b>
-                <a a='a'/>
-            </root>", @"
-            <root>
-                <a a='a'/>
-                <b a='a'>
-                    <bb a='a'/>
-                </b>
-            </root>",
-            "Sorting elements."
-        )]
-        [DataRow(@"
-            <root>
-                <directory>
-                    <b a='a'/>
-                    <a a='a'/>
-                </directory>
-            </root>", @"
-            <root>
-                <directory>
-                    <a a='a'/>
-                    <b a='a'/>
-                </directory>
-            </root>",
-            "Sorting elements in descendant."
-        )]
-        [DataRow(@"
-            <root>
-                <a delta='a' camma='a'/>
-                <a beta='a' alfa='a'/>
-            </root>", @"
-            <root>
-                <a alfa='a' beta='a'/>
-                <a camma='a' delta='a'/>
-            </root>",
-            "Sorting attributes."
-        )]
-        [DataRow(@"
-            <root>
-                <a bb='' c=''/>
-                <a b='' bc=''/>
-            </root>", @"
-            <root>
-                <a b='' bc=''/>
-                <a bb='' c=''/>
-            </root>",
-            "Sorting elements by attributes."
-        )]
+        [DynamicData(nameof(SortTestData))]
         public void CanSortXml(string source, string expectedResult, string message)
         {
             //  #   Act.

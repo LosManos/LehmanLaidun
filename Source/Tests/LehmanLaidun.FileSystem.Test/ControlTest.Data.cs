@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Xml.Linq;
 
 namespace LehmanLaidun.FileSystem.Test
@@ -323,6 +322,65 @@ namespace LehmanLaidun.FileSystem.Test
             }
         }
 
+        private static IEnumerable<object[]> SortTestData
+        {
+            get
+            {
+                yield return SortTestDataClass.Create(@"
+                    <root>l
+                        <b a='a'>
+                            <bb a='a'/>
+                        </b>
+                        <a a='a'/>
+                    </root>", @"
+                    <root>
+                        <a a='a'/>
+                        <b a='a'>
+                            <bb a='a'/>
+                        </b>
+                    </root>",
+                    "Sorting elements."
+                ).ToObjectArray();
+                    yield return SortTestDataClass.Create(@"
+                    <root>
+                        <directory>
+                            <b a='a'/>
+                            <a a='a'/>
+                        </directory>
+                    </root>", @"
+                    <root>
+                        <directory>
+                            <a a='a'/>
+                            <b a='a'/>
+                        </directory>
+                    </root>",
+                    "Sorting elements in descendant."
+                ).ToObjectArray();
+                    yield return SortTestDataClass.Create(@"
+                    <root>
+                        <a delta='a' camma='a'/>
+                        <a beta='a' alfa='a'/>
+                    </root>", @"
+                    <root>
+                        <a alfa='a' beta='a'/>
+                        <a camma='a' delta='a'/>
+                    </root>",
+                    "Sorting attributes."
+                ).ToObjectArray();
+                    yield return SortTestDataClass.Create(@"
+                    <root>
+                        <a bb='' c=''/>
+                        <a b='' bc=''/>
+                    </root>", @"
+                    <root>
+                        <a b='' bc=''/>
+                        <a bb='' c=''/>
+                    </root>",
+                    "Sorting elements by attributes."
+                ).ToObjectArray();
+            }
+    }
+
         private class CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucureTestDataClass
         {
             internal string Xml1 { get; }
@@ -458,6 +516,17 @@ namespace LehmanLaidun.FileSystem.Test
                     message);
             }
 
+            internal object[] ToObjectArray()
+            {
+                return new object[]
+                {
+                    Xml,
+                    Rules,
+                    ExpectedXPaths,
+                    Message
+                };
+            }
+
             private SimilarTestDataClass(
                     string xmlString,
                     Logic.Rule[] rules,
@@ -469,18 +538,35 @@ namespace LehmanLaidun.FileSystem.Test
                 Rules = rules;
                 Message = message;
             }
+        }
+
+        private class SortTestDataClass
+        {
+            internal string ExpectedResult { get; }
+            internal string Message { get; }
+            internal string XmlSource { get; }
+
+            internal static SortTestDataClass Create(string xmlSource, string expectedResult, string message)
+            {
+                return new SortTestDataClass(xmlSource, expectedResult, message);
+            }
 
             internal object[] ToObjectArray()
             {
                 return new object[]
                 {
-                    Xml,
-                    Rules,
-                    ExpectedXPaths,
+                    XmlSource,
+                    ExpectedResult,
                     Message
                 };
             }
-        }
 
+            private SortTestDataClass(string xmlSource, string expectedResult, string message)
+            {
+                XmlSource = xmlSource;
+                ExpectedResult = expectedResult;
+                Message = message;
+            }
+        }
     }
 }
