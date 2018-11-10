@@ -108,7 +108,7 @@ namespace LehmanLaidun.FileSystem.Test
             //  #   Assert.
             res.Should().BeEquivalentTo(toSimilars(expectedXpaths), message);
 
-//            Assert.Fail("TBA:Group result on rule (name).");
+            //Assert.Fail("TBA:Group result on rule (name).");
         }
 
         [TestMethod]

@@ -19,14 +19,6 @@ namespace LehmanLaidun.FileSystem
             XElement secondElement,
             string secondXpath)
         {
-            Func<XElement, string, bool> elementEqualsLastElementInXpath = (element, xpath) =>
-                element.ToString() == LastElementOf(xpath).ToString();
-
-            if (firstElement.HasElements) { throw new ArgumentException("The first element must not have any children. Use ShallowCopy.", nameof(firstElement)); }
-            if (secondElement.HasElements) { throw new ArgumentException("The second element must not have any children. Use ShallowCopy.", nameof(secondElement)); }
-            if (elementEqualsLastElementInXpath(firstElement, firstXpath) == false) { throw new FirstElementAndXpathDoNotMatchException(firstElement.ToString(), firstXpath); }
-            if (elementEqualsLastElementInXpath(secondElement, secondXpath) == false) { throw new SecondElementAndXpathDoNotMatchException(secondElement.ToString(), secondXpath); }
-
             FirstElement = firstElement;
             SecondElement = secondElement;
             FirstXpath = firstXpath;
@@ -44,6 +36,14 @@ namespace LehmanLaidun.FileSystem
 
         public static Similar Create(XElement firstElement, string firstXpath, XElement secondElement, string secondXpath)
         {
+            Func<XElement, string, bool> elementEqualsLastElementInXpath = (element, xpath) =>
+       element.ToString() == LastElementOf(xpath).ToString();
+
+            if (firstElement.HasElements) { throw new ArgumentException("The first element must not have any children. Use ShallowCopy.", nameof(firstElement)); }
+            if (secondElement.HasElements) { throw new ArgumentException("The second element must not have any children. Use ShallowCopy.", nameof(secondElement)); }
+            if (elementEqualsLastElementInXpath(firstElement, firstXpath) == false) { throw new FirstElementAndXpathDoNotMatchException(firstElement.ToString(), firstXpath); }
+            if (elementEqualsLastElementInXpath(secondElement, secondXpath) == false) { throw new SecondElementAndXpathDoNotMatchException(secondElement.ToString(), secondXpath); }
+
             return new Similar(firstElement, firstXpath, secondElement, secondXpath);
         }
 
