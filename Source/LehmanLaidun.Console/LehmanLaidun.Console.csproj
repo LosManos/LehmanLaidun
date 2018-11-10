@@ -6,11 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Source\LehmanLaidun.FileSystem\LehmanLaidun.FileSystem.csproj" />
+    <Folder Include="Data\MyDrive\Summer 2018\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Data\MyDrive\Summer 2018\" />
+    <ProjectReference Include="..\LehmanLaidun.FileSystem\LehmanLaidun.FileSystem.csproj" />
   </ItemGroup>
 
 </Project>
