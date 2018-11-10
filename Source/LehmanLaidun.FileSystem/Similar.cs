@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace LehmanLaidun.FileSystem
@@ -17,12 +19,27 @@ namespace LehmanLaidun.FileSystem
             XElement secondElement,
             string secondXpath)
         {
+            Func<XElement, string, bool> elementEqualsLastElementInXpath = (element, xpath) =>
+                element.ToString() == LastElementOf(xpath).ToString();
+
             if (firstElement.HasElements) { throw new ArgumentException("The first element must not have any children. Use ShallowCopy.", nameof(firstElement)); }
             if (secondElement.HasElements) { throw new ArgumentException("The second element must not have any children. Use ShallowCopy.", nameof(secondElement)); }
+            if (elementEqualsLastElementInXpath(firstElement, firstXpath) == false) { throw new FirstElementAndXpathDoNotMatchException(firstElement.ToString(), firstXpath); }
+            if (elementEqualsLastElementInXpath(secondElement, secondXpath) == false) { throw new SecondElementAndXpathDoNotMatchException(secondElement.ToString(), secondXpath); }
+
             FirstElement = firstElement;
             SecondElement = secondElement;
             FirstXpath = firstXpath;
             SecondXpath = secondXpath;
+        }
+
+        public static Similar Create( string firstXpath, string secondXpath)
+        {
+            return Create(
+                LastElementOf(firstXpath),
+                firstXpath,
+                LastElementOf(secondXpath),
+                secondXpath);
         }
 
         public static Similar Create(XElement firstElement, string firstXpath, XElement secondElement, string secondXpath)
@@ -59,5 +76,28 @@ namespace LehmanLaidun.FileSystem
         {
             return !(similar1 == similar2);
         }
+
+        #region Private methods.
+
+        private static XElement LastElementOf(string xpath)
+        {
+            var lastElementString = xpath.Split('/').Last();
+            var matches = Regex.Match(lastElementString, @"(.*)\[(.*)\]");
+            var name = matches.Groups[1].Value;
+            var attributes = matches.Groups[2].Value.Split(new[] { "and" }, StringSplitOptions.None)
+               .Select(x =>
+               {
+                   var nameValuePair = x.Split(new[] { "=" }, StringSplitOptions.None);
+                   return (
+                       name: nameValuePair.First().Trim().TrimStart('@').Trim(),
+                       value: nameValuePair.Last().Trim().TrimStart('\'').TrimEnd('\'')
+                   );
+               });
+            return new XElement(
+               name,
+               attributes.Select(a => new XAttribute(a.name, a.value)));
+        }
+
+        #endregion
     }
 }
