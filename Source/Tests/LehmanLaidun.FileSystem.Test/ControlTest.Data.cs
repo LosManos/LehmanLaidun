@@ -239,7 +239,7 @@ namespace LehmanLaidun.FileSystem.Test
                 yield return SimilarTestDataClass.Create(
                     @"<root/>",
                     new Logic.Rule[] { },
-                    new (string, string)[] { },
+                    new Similar[] { },
                     "No similaries found in an empty input."
                 ).ToObjectArray();
 
@@ -269,10 +269,11 @@ namespace LehmanLaidun.FileSystem.Test
                             }
                         }
                     )   },
-                    new (string, string)[]{
-                        (@"/root/d[@Name='a']/f[@Name='b' and @Size='12']",
-                        @"/root/d[@Name='c']/f[@Name='b' and @Size='13']")
-                    },
+                    Similar.Create(
+                        "Just a single arbitrary rule - Equal Name but different Size",
+                        @"/root/d[@Name='a']/f[@Name='b' and @Size='12']",
+                        @"/root/d[@Name='c']/f[@Name='b' and @Size='13']"
+                    ),
                     "A single rule should be executed."
                 ).ToObjectArray();
 
@@ -313,12 +314,49 @@ namespace LehmanLaidun.FileSystem.Test
                             }
                         )
                   },
-                    new (string, string)[]{
-                        (@"/root/d[@n='a']/f[@n='c' and @s='123']",
-                        @"/root/d[@n='c']/f[@n='c' and @s='13']")
-                    },
+                    Similar.Create(
+                        "An arbitrary rule - any element with a n=b tag.",
+                        @"/root/d[@n='a']/f[@n='c' and @s='123']",
+                        @"/root/d[@n='c']/f[@n='c' and @s='13']"
+                    ),
                     "Several rules should be executed."
                     ).ToObjectArray();
+
+                yield return SimilarTestDataClass.Create(
+                    @"
+<root>
+    <d n='a'>
+        <f n='aa'/>
+    </d>
+    <d n='b'>
+        <f n='aa'/>
+        <f n='ba'/>
+        <f n='ca'/>
+    </d>
+    <d n='c'>
+        <f n='ca'/>
+    </d>
+</root>",
+                new[]
+                {
+                    Logic.Rule.Create("Any A",
+                        (e1, e2) => e1.Attribute("n").Value == "aa" && e2.Attribute("n").Value == "aa"),
+                    Logic.Rule.Create("Any C",
+                        (e1, e2) => e1.Attribute("n").Value=="ca" && e2.Attribute("n").Value == "ca")
+                },
+                new[] {
+                Similar.Create(
+                    "Any A", 
+                    @"/root/d[@n='a']/f[@n='aa']", 
+                    @"/root/d[@n='b']/f[@n='aa']"
+                    ),
+                Similar.Create(
+                    "Any C", 
+                    @"/root/d[@n='b']/f[@n='ca']", 
+                    @"/root/d[@n='c']/f[@n='ca']"
+                    ), },
+                "Several similars from different rules"
+                ).ToObjectArray();
             }
         }
 
@@ -499,30 +537,40 @@ namespace LehmanLaidun.FileSystem.Test
         {
             internal XDocument Xml { get; private set; }
             internal Logic.Rule[] Rules { get; private set; }
-            internal IEnumerable<(string, string)> ExpectedXPaths { get; private set; }
+            internal IEnumerable<Similar> Expecteds { get; private set; }
             internal string Message { get; private set; }
 
             internal static SimilarTestDataClass Create(
                 string xmlString,
                 Logic.Rule[] rules,
-                IEnumerable<(string, string)> expectedXPaths,
+                Similar expecteds,
+                string message
+                )
+            {
+                return Create(xmlString, rules, new[] { expecteds }, message);
+            }
+
+            internal static SimilarTestDataClass Create(
+                string xmlString,
+                Logic.Rule[] rules,
+                IEnumerable<Similar> expecteds,
                 string message
                 )
             {
                 return new SimilarTestDataClass(
                     xmlString,
                     rules,
-                    expectedXPaths,
+                    expecteds,
                     message);
             }
-
+            
             internal object[] ToObjectArray()
             {
                 return new object[]
                 {
                     Xml,
                     Rules,
-                    ExpectedXPaths,
+                    Expecteds,
                     Message
                 };
             }
@@ -530,11 +578,11 @@ namespace LehmanLaidun.FileSystem.Test
             private SimilarTestDataClass(
                     string xmlString,
                     Logic.Rule[] rules,
-                    IEnumerable<(string, string)> expectedXpaths,
+                    IEnumerable<Similar> expecteds,
                     string message)
             {
                 Xml = XDocument.Parse(xmlString);
-                ExpectedXPaths = expectedXpaths;
+                Expecteds = expecteds;
                 Rules = rules;
                 Message = message;
             }

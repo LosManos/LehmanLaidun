@@ -24,6 +24,11 @@ namespace LehmanLaidun.FileSystem
             public IEnumerable<ComparerDelegate> Comparers { get; }
             public string RuleName { get; }
 
+            public static Rule Create(string ruleName, ComparerDelegate comparer)
+            {
+                return Create(ruleName, new[] { comparer });
+            }
+
             public static Rule Create(string ruleName, IEnumerable<ComparerDelegate> comparers)
             {
                 return new Rule(ruleName, comparers);
@@ -147,6 +152,7 @@ namespace LehmanLaidun.FileSystem
             IEnumerable<Rule> rules
         )
         {
+            if (doc == null) { throw new ArgumentNullException(nameof(doc)); }
             if (rules == null) { throw new ArgumentNullException(nameof(rules)); }
 
             var elements = Flatten(doc.Root).Where(e => e != doc.Root).ToList();
@@ -160,10 +166,9 @@ namespace LehmanLaidun.FileSystem
                     {
                         foreach (var rule in rules)
                         {
-                            var ruleName = rule.RuleName;
                             if (rule.Comparers.All(c => c(FirstElement: firstElement, SecondElement: secondElement)))
                             {
-                                yield return Similar.Create(firstElement.ShallowCopy(), GetXPathOf(firstElement), secondElement.ShallowCopy(), GetXPathOf(secondElement));
+                                yield return Similar.Create(rule.RuleName, firstElement.ShallowCopy(), GetXPathOf(firstElement), secondElement.ShallowCopy(), GetXPathOf(secondElement));
                             }
                         }
                     }

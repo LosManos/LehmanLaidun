@@ -18,9 +18,10 @@ namespace LehmanLaidun.FileSystem.Test
             var secondXpath = "//root/AnElement/Name2[@B='2' and @C='3']";
 
             //  #   Act.
-            var res = Similar.Create(firstElement, firstXpath, secondElement, secondXpath);
+            var res = Similar.Create("MyRule", firstElement, firstXpath, secondElement, secondXpath);
 
             //  #   Assert.
+            res.RuleName.Should().Be("MyRule");
             res.FirstElement.Should().Be(new XElement("Name1", new[] { new XAttribute("A", "1") }));
             res.FirstXpath.Should().Be("//root/Name1[@A='1']");
             res.SecondElement.Should().Be(new XElement("Name2", new[] { new XAttribute("B", "2"), new XAttribute("C", "3") }));
@@ -37,18 +38,19 @@ namespace LehmanLaidun.FileSystem.Test
             var secondXpath = "//root/AnElement/Name2[@B='2' and @C='3']";
 
             //  #   Act.
-            ; try
+            try
             {
-                Similar.Create(firstElement, firstXpath, secondElement, secondXpath);
+                Similar.Create("AnyRuleName", firstElement, firstXpath, secondElement, secondXpath);
 
                 //  #   Assert.
-                Assert.Fail("An exception should ha;ve been thrown but was not.");
+                Assert.Fail("An exception should have been thrown but was not.");
             }
             catch (FirstElementAndXpathDoNotMatchException exc)
             {
                 //  It should come here.
                 Assert.IsTrue(true, "It should throw and exception.");
 
+                exc.RuleName.Should().Be("AnyRuleName");
                 exc.Element.Should().Be(firstElement.ToString());
                 exc.Xpath.Should().Be(firstXpath);
                 exc.Message.Should().Contain("A");
@@ -64,16 +66,19 @@ namespace LehmanLaidun.FileSystem.Test
             //  #   Act.
             try
             {
-                Similar.Create(firstElement, firstXpath, secondElement, secondXpath);
+                Similar.Create("Any rule name", firstElement, firstXpath, secondElement, secondXpath);
 
                 //  #   Assert.
-                Assert.Fail("An exception should ha;ve been thrown but was not.");
+                Assert.Fail("An exception should have been thrown but was not.");
             }
             catch (SecondElementAndXpathDoNotMatchException exc)
             {
                 //  It should come here.
                 Assert.IsTrue(true, "It should throw and exception.");
 
+                exc.RuleName.Should().Be("Any rule name");
+                exc.Element.Should().Be(secondElement.ToString());
+                exc.Xpath.Should().Be(secondXpath);
                 exc.Message.Should().Contain("Name2");
                 exc.Message.Should().Contain("XXX");
             }
@@ -87,9 +92,10 @@ namespace LehmanLaidun.FileSystem.Test
             var secondXpath = "//root/AnElement/Name2[@B='2' and @C='3']";
 
             //  #   Act.
-            var res = Similar.Create(firstXpath, secondXpath);
+            var res = Similar.Create("MyRule", firstXpath, secondXpath);
 
             //  #   Assert.
+            res.RuleName.Should().Be("MyRule");
             res.FirstElement.Should().Be(new XElement("Name1", new[] { new XAttribute("A", "1") }));
             res.FirstXpath.Should().Be("//root/Name1[@A='1']");
             res.SecondElement.Should().Be(new XElement("Name2", new[] { new XAttribute("B", "2"), new XAttribute("C", "3") }));

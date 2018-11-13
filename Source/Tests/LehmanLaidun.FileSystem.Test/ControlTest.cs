@@ -69,46 +69,14 @@ namespace LehmanLaidun.FileSystem.Test
         public void CanFindSimilars_ReturnFittingSimilars(
             XDocument doc,
             IEnumerable<Logic.Rule> rules,
-            IEnumerable<(string, string)> expectedXpaths,
+            IEnumerable<Similar> expecteds,
             string message)
         {
-            //  #   Arrange.
-            Func<string, XElement> toElement = (string xpath) =>
-             {
-                 var lastElementString = xpath.Split('/').Last();
-                 var matches = Regex.Match(lastElementString, @"(.*)\[(.*)\]");
-                 var name = matches.Groups[1].Value;
-                 var attributes = matches.Groups[2].Value.Split("and")
-                    .Select(x =>
-                    {
-                        var nameValuePair = x.Split("=");
-                        return (
-                            name: nameValuePair.First().Trim().TrimStart('@').Trim(),
-                            value: nameValuePair.Last().Trim().TrimStart('\'').TrimEnd('\'')
-                        );
-                    });
-                 return new XElement(
-                    name,
-                    attributes.Select(a => new XAttribute(a.name, a.value)));
-             };
-            Func<IEnumerable<(string FirstXpath, string SecondXpath)>, IEnumerable<Similar>> toSimilars =xpaths =>
-            {
-                return xpaths
-                    .Select(ex => Similar.Create(
-                        toElement(ex.FirstXpath),
-                        ex.FirstXpath,
-                        toElement(ex.SecondXpath),
-                        ex.SecondXpath)
-                    );
-            };
-
             //  #   Act.
             var res = Logic.FindSimilars(doc, rules);
 
             //  #   Assert.
-            res.Should().BeEquivalentTo(toSimilars(expectedXpaths), message);
-
-            //Assert.Fail("TBA:Group result on rule (name).");
+            res.Should().BeEquivalentTo(expecteds, message);
         }
 
         [TestMethod]

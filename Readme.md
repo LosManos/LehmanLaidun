@@ -6,6 +6,9 @@ State of project is Alpha.
 
 ## Problem solved
 
+Finding duplicate pictures.
+Cleaning your hullerombuller backups.
+
 You have a lot of pictures backed up on your harddrive. And then on another drive from your phone. And you spouse's images resides somehwere. Plus some stray vacation pictures. And the one of your band.  
 You don't have them in order and they are backup up everywhere and lots of doubles; so you pay 50% to much for your backup plan.
 
@@ -62,12 +65,20 @@ There is a a skeleton of a console application that compare two folder structure
 		Console.WriteLine( ... )
 	}
 
-### Find all similar, "almost duplicates" elements in an xml.
+### Find all duplicates and all similar, "almost duplicates", elements in an xml.
 
 	var doc = XDocument.Parse(xmlString);
 	var similars = Logic.FindSimilars(
 		doc, 
 		new[]{
+			Logic.Rule.Create(
+				"Duplicate",
+				(element1, element2) =>
+					element1.Name == "File" && element2.Name == "File" &&
+					element1.Attribute("Name").Value == element2.Attribute("Name").Value &&
+						element1.Attribute("Size")?.Value == element2.Attribute("Size")?.Value;
+				)
+			)
 			Logic.Rule.Create( 
 				"Same size", 
 				new Logic.Rule.CompareDelegate[]{
@@ -81,3 +92,5 @@ There is a a skeleton of a console application that compare two folder structure
 	foreach( var similar in similars ){
 		Console.WriteLine(...).
 	}
+
+	In the above example the Rules are created in different ways only because it is possible.

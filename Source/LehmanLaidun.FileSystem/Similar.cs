@@ -8,43 +8,48 @@ namespace LehmanLaidun.FileSystem
 {
     public class Similar
     {
+        public string RuleName { get; }
         public XElement FirstElement { get; }
-        public XElement SecondElement { get; }
         public string FirstXpath { get; }
+        public XElement SecondElement { get; }
         public string SecondXpath { get; }
 
         private Similar(
+            string ruleName,
             XElement firstElement,
             string firstXpath, 
             XElement secondElement,
             string secondXpath)
         {
+            RuleName = ruleName;
             FirstElement = firstElement;
             SecondElement = secondElement;
             FirstXpath = firstXpath;
             SecondXpath = secondXpath;
         }
 
-        public static Similar Create( string firstXpath, string secondXpath)
+        public static Similar Create( string ruleName, string firstXpath, string secondXpath)
         {
             return Create(
+                ruleName,
                 LastElementOf(firstXpath),
                 firstXpath,
                 LastElementOf(secondXpath),
                 secondXpath);
         }
 
-        public static Similar Create(XElement firstElement, string firstXpath, XElement secondElement, string secondXpath)
+        public static Similar Create(string ruleName, XElement firstElement, string firstXpath, XElement secondElement, string secondXpath)
         {
             Func<XElement, string, bool> elementEqualsLastElementInXpath = (element, xpath) =>
        element.ToString() == LastElementOf(xpath).ToString();
 
+            if (ruleName == null) { throw new ArgumentNullException(nameof(ruleName)); }
             if (firstElement.HasElements) { throw new ArgumentException("The first element must not have any children. Use ShallowCopy.", nameof(firstElement)); }
             if (secondElement.HasElements) { throw new ArgumentException("The second element must not have any children. Use ShallowCopy.", nameof(secondElement)); }
-            if (elementEqualsLastElementInXpath(firstElement, firstXpath) == false) { throw new FirstElementAndXpathDoNotMatchException(firstElement.ToString(), firstXpath); }
-            if (elementEqualsLastElementInXpath(secondElement, secondXpath) == false) { throw new SecondElementAndXpathDoNotMatchException(secondElement.ToString(), secondXpath); }
+            if (elementEqualsLastElementInXpath(firstElement, firstXpath) == false) { throw new FirstElementAndXpathDoNotMatchException(ruleName, firstElement.ToString(), firstXpath); }
+            if (elementEqualsLastElementInXpath(secondElement, secondXpath) == false) { throw new SecondElementAndXpathDoNotMatchException(ruleName, secondElement.ToString(), secondXpath); }
 
-            return new Similar(firstElement, firstXpath, secondElement, secondXpath);
+            return new Similar(ruleName, firstElement, firstXpath, secondElement, secondXpath);
         }
 
         public override bool Equals(object obj)

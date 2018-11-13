@@ -38,7 +38,7 @@ namespace LehmanLaidun.Console
 
             var differences = Logic.CompareXml(myFiles, theirFiles);
 
-            //TODO:Make other output if differences.REsult == true;
+            //TODO:Make other output if differences.Result == true;
 
             OutputResult(differences);
 
