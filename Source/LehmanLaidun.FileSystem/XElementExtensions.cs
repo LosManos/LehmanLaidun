@@ -5,12 +5,13 @@ using System.Xml.XPath;
 
 namespace LehmanLaidun.FileSystem
 {
-    public static class XElementExtensions
+    internal static class XElementExtensions
     {
-        private const string ElementNameFile = "file";
-        private const string AttributeNameName = "name";
-        private const string AttributeNameLength = "length";
         private const string ElementNameDirectory = "directory";
+        private const string ElementNameFile = "file";
+        private const string ElementNameRoot = "root";
+        private const string AttributeNameLength = "length";
+        private const string AttributeNameName = "name";
         private const string AttributeNamePath = "path";
 
         /// <summary>This method is the same as Add but it also returns the argument.
@@ -19,13 +20,13 @@ namespace LehmanLaidun.FileSystem
         /// <param name="me"></param>
         /// <param name="element"></param>
         /// <returns></returns>
-        public static XElement AddElement(this XElement me, XElement element)
+        internal static XElement AddElement(this XElement me, XElement element)
         {
             me.Add(element);
             return element;
         }
 
-        public static XElement AddDirectoryElement( this XElement element, string directory)
+        internal static XElement AddDirectoryElement( this XElement element, string directory)
         {
             var newElement = new XElement(ElementNameDirectory, new XAttribute(AttributeNamePath, directory));
             element.AddElement(newElement);
@@ -38,13 +39,18 @@ namespace LehmanLaidun.FileSystem
         /// <param name="element"></param>
         /// <param name="elements"></param>
         /// <returns></returns>
-        public static XElement AddElements(this XElement element, IEnumerable<XElement> elements)
+        internal static XElement AddElements(this XElement element, IEnumerable<XElement> elements)
         {
             element.Add(elements);
             return element;
         }
 
-        public static XElement AddFileElement(this XElement element, FileItem file)
+        /// <summary>This method creates an element out of the FileItem provided and adds it to the element provided.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        internal static XElement AddFileElement(this XElement element, FileItem file)
         {
             var newElement = new XElement(
                 ElementNameFile,
@@ -55,7 +61,11 @@ namespace LehmanLaidun.FileSystem
             return newElement;
         }
 
-        public static IEnumerable<XElement> Parents(this XElement element)
+        /// <summary>This method returns a list of all parents to the supplied element.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        internal static IEnumerable<XElement> Parents(this XElement element)
         {
             var ret = new List<XElement> { element };
             var e = element;
@@ -67,9 +77,14 @@ namespace LehmanLaidun.FileSystem
             return ret;
         }
 
-        public static XElement SelectDirectoryElement(this XDocument doc, IEnumerable<string> directoryNames)
+        /// <summary>This method returns the directory element found from a list of directory names, uppermost directory first..
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="directoryNames"></param>
+        /// <returns></returns>
+        internal static XElement SelectDirectoryElement(this XDocument doc, IEnumerable<string> directoryNames)
         {
-            return doc.XPathSelectElement(XPath(directoryNames));
+            return doc.XPathSelectElement(CreateXPathFrom(directoryNames));
         }
 
         /// <summary>This method does a shallow copy, only the element name and the attributes
@@ -78,13 +93,25 @@ namespace LehmanLaidun.FileSystem
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        public static XElement ShallowCopy(this XElement element)
+        internal static XElement ShallowCopy(this XElement element)
         {
             var ret = new XElement(element.Name);
             ret.Add(element.Attributes());
             return ret;
         }
 
+        #region Private helper methods.
+
+        private static string CreateXPathFrom(IEnumerable<string> directories)
+        {
+            return "/" +
+                    string.Join(
+                        "/",
+                        Join(
+                            ElementNameRoot,
+                            directories.Select(d => $"{ElementNameDirectory}[@{AttributeNamePath}= '{d}']")
+                    ));
+        }
 
         private static IEnumerable<string> Join(string item, IEnumerable<string> items)
         {
@@ -93,15 +120,6 @@ namespace LehmanLaidun.FileSystem
             return x;
         }
 
-        private static string XPath(IEnumerable<string> directories)
-        {
-            return "/" +
-                    string.Join(
-                        "/",
-                        Join(
-                            "root",
-                            directories.Select(d => $"directory[@path='{d}']")
-                    ));
-        }
+        #endregion
     }
 }
