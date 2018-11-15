@@ -49,7 +49,7 @@ namespace LehmanLaidun.Console
         {
             C.WriteLine("This program compares two directory trees and returns the differences.");
             C.WriteLine("Usage");
-            C.WriteLine("dotnet LehmanLaidun.Console \"C:\\MyMusic\" E:");
+            C.WriteLine("dotnet LehmanLaidun.Console.dll \"C:\\MyMusic\" E:\\");
         }
 
         private static void OutputResult((bool Result, IEnumerable<Difference> Differences) diff)
@@ -58,10 +58,11 @@ namespace LehmanLaidun.Console
             {
                 if( d.FirstXPath != null)
                 {
-                    C.WriteLine($"Found ony in first:{d.FirstXPath}.");
+                    C.WriteLine($"Found only in first:{d.FirstXPath}.");
                 }
-                if( d.SecondXPath != null ){
-                    C.WriteLine($"{d.FirstXPath}\t{d.SecondXPath}");
+                if( d.SecondXPath != null)
+                {
+                    C.WriteLine($"Found only in second:{d.SecondXPath}.");
                 }
             }
         }
