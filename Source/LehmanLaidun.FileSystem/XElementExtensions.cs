@@ -7,6 +7,12 @@ namespace LehmanLaidun.FileSystem
 {
     public static class XElementExtensions
     {
+        private const string ElementNameFile = "file";
+        private const string AttributeNameName = "name";
+        private const string AttributeNameLength = "length";
+        private const string ElementNameDirectory = "directory";
+        private const string AttributeNamePath = "path";
+
         /// <summary>This method is the same as Add but it also returns the argument.
         /// Makes for neater calling code.
         /// </summary>
@@ -19,20 +25,9 @@ namespace LehmanLaidun.FileSystem
             return element;
         }
 
-        //public static XElement FindLongestPath(this XDocument doc, IEnumerable<string> directories)
-        //{
-        //    for (int i = directories.Count() - 1; i >= 0; --i)
-        //    {
-        //        var xpath = XPath(directories.Take(i));
-        //        var res = doc.Document.XPathSelectElement(xpath);
-        //        if (res != null) { return res; }
-        //    }
-        //    return null;
-        //}
-
         public static XElement AddDirectoryElement( this XElement element, string directory)
         {
-            var newElement = new XElement("directory", new XAttribute("path", directory));
+            var newElement = new XElement(ElementNameDirectory, new XAttribute(AttributeNamePath, directory));
             element.AddElement(newElement);
             return newElement;
         }
@@ -52,9 +47,9 @@ namespace LehmanLaidun.FileSystem
         public static XElement AddFileElement(this XElement element, FileItem file)
         {
             var newElement = new XElement(
-                "file",
-                new XAttribute("name", file.Name),
-                new XAttribute("length", file.Length)
+                ElementNameFile,
+                new XAttribute(AttributeNameName, file.Name),
+                new XAttribute(AttributeNameLength, file.Length)
             );
             element.AddElement(newElement);
             return newElement;
