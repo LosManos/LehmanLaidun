@@ -132,19 +132,19 @@ namespace LehmanLaidun.FileSystem.Test
             res.Should().BeEquivalentTo(
                 XDocument.Parse(@"
 <root path='c:\images'>
-    <directory path=''>
+    <directory name=''>
         <file name='stray image.jpg' length='4'/>
     </directory>
-    <directory path='Vacation'>
+    <directory name='Vacation'>
         <file name='20180606-100404.jpg' length='15'/>
     </directory>
-    <directory path='2018'>
-        <directory path='201809'>
+    <directory name='2018'>
+        <directory name='201809'>
             <file name='20180925-220604.jpg' length='2'/>
             <file name='20180925-220502.jpg' length='4'/>
         </directory>
     </directory>
-    <directory path='iphone backup'>
+    <directory name='iphone backup'>
         <file name='20180925-2207.jpg' length='3'/>
     </directory>
 </root>

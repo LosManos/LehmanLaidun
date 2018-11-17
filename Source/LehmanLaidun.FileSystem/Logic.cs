@@ -18,7 +18,7 @@ namespace LehmanLaidun.FileSystem
         /// </summary>
         public static readonly string AttributeNameName = "name";
 
-        /// <summary>This is the name of the attribute that represent the name of a directory or the path of the root..
+        /// <summary>This is the name of the attribute that represent the path of thej root..
         /// </summary>
         public static readonly string AttributeNamePath = "path";
 

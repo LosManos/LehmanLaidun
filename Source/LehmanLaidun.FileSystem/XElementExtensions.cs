@@ -22,7 +22,7 @@ namespace LehmanLaidun.FileSystem
 
         internal static XElement AddDirectoryElement( this XElement element, string directory)
         {
-            var newElement = new XElement(Logic.ElementNameDirectory, new XAttribute(Logic.AttributeNamePath, directory));
+            var newElement = new XElement(Logic.ElementNameDirectory, new XAttribute(Logic.AttributeNameName, directory));
             element.AddElement(newElement);
             return newElement;
         }
@@ -103,7 +103,7 @@ namespace LehmanLaidun.FileSystem
                         "/",
                         Join(
                             Logic.ElementNameRoot,
-                            directories.Select(d => $"{Logic.ElementNameDirectory}[@{Logic.AttributeNamePath}= '{d}']")
+                            directories.Select(d => $"{Logic.ElementNameDirectory}[@{Logic.AttributeNameName}= '{d}']")
                     ));
         }
 
