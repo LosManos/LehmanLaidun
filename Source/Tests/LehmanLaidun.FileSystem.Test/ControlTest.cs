@@ -162,6 +162,30 @@ namespace LehmanLaidun.FileSystem.Test
             res.Should().BeEquivalentTo(XDocument.Parse(expectedResult), message);
         }
 
+        [TestMethod]
+        public void RootNameIsKnown()
+        {
+            //  #   Arrange.
+            var rootName = Logic.ElementNameRoot;
+            const string Path = @"c:\images";
+            var files = new[]
+            {
+                new { pathfile = @"c:\images\whatever.jpg", length = 4 }
+            };
+
+            var mockedFileSystem = new MockFileSystem(
+                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length))
+            );
+
+            var sut = LogicFactory.CreateForPath(mockedFileSystem, Path);
+
+            //  #   Act.
+            var res = sut.AsXDocument();
+
+            //  #   Assert.
+            res.Root.Name.LocalName.Should().Be(rootName);
+        }
+
         #region Helper methods.
 
         private static void Assert_Differences

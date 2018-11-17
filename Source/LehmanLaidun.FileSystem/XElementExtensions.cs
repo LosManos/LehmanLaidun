@@ -7,12 +7,6 @@ namespace LehmanLaidun.FileSystem
 {
     internal static class XElementExtensions
     {
-        private const string ElementNameDirectory = "directory";
-        private const string ElementNameFile = "file";
-        private const string ElementNameRoot = "root";
-        private const string AttributeNameLength = "length";
-        private const string AttributeNameName = "name";
-        private const string AttributeNamePath = "path";
 
         /// <summary>This method is the same as Add but it also returns the argument.
         /// Makes for neater calling code.
@@ -28,7 +22,7 @@ namespace LehmanLaidun.FileSystem
 
         internal static XElement AddDirectoryElement( this XElement element, string directory)
         {
-            var newElement = new XElement(ElementNameDirectory, new XAttribute(AttributeNamePath, directory));
+            var newElement = new XElement(Logic.ElementNameDirectory, new XAttribute(Logic.AttributeNamePath, directory));
             element.AddElement(newElement);
             return newElement;
         }
@@ -53,9 +47,9 @@ namespace LehmanLaidun.FileSystem
         internal static XElement AddFileElement(this XElement element, FileItem file)
         {
             var newElement = new XElement(
-                ElementNameFile,
-                new XAttribute(AttributeNameName, file.Name),
-                new XAttribute(AttributeNameLength, file.Length)
+                Logic.ElementNameFile,
+                new XAttribute(Logic.AttributeNameName, file.Name),
+                new XAttribute(Logic.AttributeNameLength, file.Length)
             );
             element.AddElement(newElement);
             return newElement;
@@ -108,8 +102,8 @@ namespace LehmanLaidun.FileSystem
                     string.Join(
                         "/",
                         Join(
-                            ElementNameRoot,
-                            directories.Select(d => $"{ElementNameDirectory}[@{AttributeNamePath}= '{d}']")
+                            Logic.ElementNameRoot,
+                            directories.Select(d => $"{Logic.ElementNameDirectory}[@{Logic.AttributeNamePath}= '{d}']")
                     ));
         }
 

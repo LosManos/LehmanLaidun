@@ -10,6 +10,30 @@ namespace LehmanLaidun.FileSystem
 {
     public class Logic
     {
+        /// <summary>This is the name of the attribute that represents the length of the file.
+        /// </summary>
+        public static readonly string AttributeNameLength = "length";
+
+        /// <summary>This is the name of the attribute that represents the nameo of a directory or file.
+        /// </summary>
+        public static readonly string AttributeNameName = "name";
+
+        /// <summary>This is the name of the attribute that represent the name of a directory or the path of the root..
+        /// </summary>
+        public static readonly string AttributeNamePath = "path";
+
+        /// <summary>This is the name of an element that represents a directory.
+        /// </summary>
+        public static readonly string ElementNameDirectory = "directory";
+
+        /// <summary>This is the name of an element that represents a file.
+        /// </summary>
+        public static readonly string ElementNameFile = "file";
+
+        /// <summary>This is the name of the root element.
+        /// </summary>
+        public static readonly string ElementNameRoot = "root";
+
         private IFileSystem _fileSystem;
 
         public string Path { get; }
@@ -92,7 +116,7 @@ namespace LehmanLaidun.FileSystem
         /// <returns></returns>
         public XDocument AsXDocument()
         {
-            var doc = new XDocument(new XElement("root", new XAttribute("path", Path)));
+            var doc = new XDocument(new XElement(ElementNameRoot, new XAttribute("path", Path)));
             foreach (var file in AsEnumerableFiles())
             {
                 //  Remove the first part, the Path.
