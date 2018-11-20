@@ -10,6 +10,10 @@ namespace LehmanLaidun.FileSystem
 {
     public class Logic
     {
+        /// <summary>This is the name of the attribute that represents the last write datetime of the file.
+        /// </summary>
+        public static readonly string AttributeNameLastWriteTime = "lastWriteTime";
+
         /// <summary>This is the name of the attribute that represents the length of the file.
         /// </summary>
         public static readonly string AttributeNameLength = "length";
@@ -116,19 +120,19 @@ namespace LehmanLaidun.FileSystem
         /// <returns></returns>
         public XDocument AsXDocument()
         {
-            var doc = new XDocument(new XElement(ElementNameRoot, new XAttribute("path", Path)));
+            var doc = new XDocument(new XElement(ElementNameRoot, new XAttribute(AttributeNamePath, Path)));
             foreach (var file in AsEnumerableFiles())
             {
                 //  Remove the first part, the Path.
                 var relPath = file.Path.Remove(0, Path.Length);
+                //  Split the path to a list of directory names.
                 var directoryNames = relPath.Trim(new[] { _fileSystem.Path.DirectorySeparatorChar }).Split(_fileSystem.Path.DirectorySeparatorChar);
                 var directoryElement = doc.Root;
                 for (var i = 0; i < directoryNames.Length; ++i)
                 {
-                    var directoryNameList = directoryNames.Take(i + 1); // The first n items.
-
+                    var directoryNameList = directoryNames.Take(i + 1); // The first n directories.
+                    //  Select the element for the last directory; or create it and select it.
                     directoryElement = doc.SelectDirectoryElement(directoryNameList) ?? directoryElement.AddDirectoryElement(directoryNameList.Last());
-
                 }
                 directoryElement.AddFileElement(file);
             }

@@ -1,19 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO.Abstractions;
 
 namespace LehmanLaidun.FileSystem
 {
     public class FileItem : FileSystemItem
     {
-        public string Path { get; }
-        public string Name { get; }
+        public DateTime LastWriteTime { get; }
         public long Length { get; }
+        public string Name { get; }
+        public string Path { get; }
 
-        private FileItem(string path, string name, long length)
+        private FileItem(string path, string name, long length, DateTime lastWriteTime)
         {
             Path = path;
             Name = name;
             Length = length;
+            LastWriteTime = lastWriteTime;
         }
 
         internal static FileItem Create(
@@ -31,7 +34,9 @@ namespace LehmanLaidun.FileSystem
             // See here: https://stackoverflow.com/questions/44029830/how-do-i-mock-the-fileinfo-information-for-a-file
             long length = fileSystem.FileInfo.FromFileName(pathFile).Length;
 
-            return new FileItem(path, filename, length);
+            var lastWriteTime = fileSystem.File.GetLastWriteTime(pathFile);
+
+            return new FileItem(path, filename, length, lastWriteTime);
         }
 
         public override bool Equals(object obj)
@@ -40,7 +45,8 @@ namespace LehmanLaidun.FileSystem
             return item != null &&
                    Path == item.Path &&
                    Name == item.Name &&
-                   Length == item.Length;
+                   Length == item.Length &&
+                   LastWriteTime == item.LastWriteTime;
         }
 
         public override int GetHashCode()
@@ -49,6 +55,7 @@ namespace LehmanLaidun.FileSystem
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Path);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Name);
             hashCode = hashCode * -1521134295 + Length.GetHashCode();
+            hashCode = hashCode * -1521134295 + LastWriteTime.GetHashCode();
             return hashCode;
         }
 

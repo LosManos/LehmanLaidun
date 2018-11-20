@@ -49,7 +49,8 @@ namespace LehmanLaidun.FileSystem
             var newElement = new XElement(
                 Logic.ElementNameFile,
                 new XAttribute(Logic.AttributeNameName, file.Name),
-                new XAttribute(Logic.AttributeNameLength, file.Length)
+                new XAttribute(Logic.AttributeNameLength, file.Length), 
+                new XAttribute(Logic.AttributeNameLastWriteTime, file.LastWriteTime.ToString("u"))
             );
             element.AddElement(newElement);
             return newElement;
