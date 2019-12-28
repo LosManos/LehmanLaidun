@@ -38,7 +38,7 @@ namespace LehmanLaidun.FileSystem
         /// </summary>
         public static readonly string ElementNameRoot = "root";
 
-        private IFileSystem _fileSystem;
+        private readonly IFileSystem _fileSystem;
 
         public string Path { get; }
 
@@ -69,7 +69,7 @@ namespace LehmanLaidun.FileSystem
             }
         }
 
-        /// <summary>This static constructor is the prefered.
+        /// <summary>This static constructor is the preferred.
         /// </summary>
         /// <param name="fileSystem"></param>
         /// <param name="path"></param>
@@ -115,7 +115,7 @@ namespace LehmanLaidun.FileSystem
             }
         }
 
-        /// <summary>This method returns the file system's files as an XML.
+        /// <summary>This method returns the file system's directories and files as XML.
         /// </summary>
         /// <returns></returns>
         public XDocument AsXDocument()

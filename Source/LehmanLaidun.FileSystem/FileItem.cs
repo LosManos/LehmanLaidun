@@ -34,7 +34,9 @@ namespace LehmanLaidun.FileSystem
             // See here: https://stackoverflow.com/questions/44029830/how-do-i-mock-the-fileinfo-information-for-a-file
             long length = fileSystem.FileInfo.FromFileName(pathFile).Length;
 
-            var lastWriteTime = fileSystem.File.GetLastWriteTime(pathFile);
+            // GetLastWriteTime always returns the value as local kind
+            // so we change it to UTC to alway have... UTC.
+            var lastWriteTime = fileSystem.File.GetLastWriteTime(pathFile).ToUniversalTime();
 
             return new FileItem(path, filename, length, lastWriteTime);
         }

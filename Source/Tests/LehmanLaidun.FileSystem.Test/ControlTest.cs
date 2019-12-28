@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace LehmanLaidun.FileSystem.Test
@@ -106,17 +105,52 @@ namespace LehmanLaidun.FileSystem.Test
         }
 
         [TestMethod]
-        public void CanReturnXmlWithAllPropertiesSet()
+        public void CanReturnWithAllPropertiesSet()
         {
-            //  #   Arrange.
             const string Path = @"c:\images";
             var files = new[]
             {
-                new { pathfile = @"c:\images\Vacation\20180606-100404.jpg", length = 15, lastAccessTime = DateTime.Parse("2010-01-16 11:22:33Z") },
-                new { pathfile = @"c:\images\2018\201809\20180925-220604.jpg", length = 2, lastAccessTime = DateTime.Parse("2010-01-03 11:22:33Z") },
-                new { pathfile = @"c:\images\2018\201809\20180925-220502.jpg", length = 4, lastAccessTime = DateTime.Parse("2010-01-05 11:22:33Z") },
-                new { pathfile = @"c:\images\iphone backup\20180925-2207.jpg", length = 3, lastAccessTime = DateTime.Parse("2010-01-04 11:22:33Z") },
-                new { pathfile = @"c:\images\stray image.jpg", length = 4, lastAccessTime = DateTime.Parse("2010-01-05 11:22:33Z") }
+                new { 
+                    pathfile = @"c:\images\Vacation\20180606-100404.jpg", 
+                    length = 15, 
+                    lastAccessTime = CreateAsUtc("2010-01-16 11:16:33Z") },
+            };
+
+            var mockedFileSystem = new MockFileSystem(
+                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length, pf.lastAccessTime))
+            );
+
+            var sut = LogicFactory.CreateForPath(mockedFileSystem, Path);
+
+            //  #   Act.
+            var res = sut.AsXDocument();
+
+            //  #   Assert.
+            res.Should().BeEquivalentTo(
+                XDocument.Parse(@"
+<root path='c:\images'>
+    <directory name='Vacation'>
+        <file name='20180606-100404.jpg' length='15' lastWriteTime='2010-01-16T11:16:33.0000000Z'/>
+    </directory>
+</root>
+"));
+        }
+
+        /// <summary>This test is a kludge as it tests both the output structure
+        /// and its contents and anything between.
+        /// Feel free to rewrite to (a) cleaner test(s).
+        /// </summary>
+        [TestMethod]
+        public void CanReturnXml()
+        {
+            const string Path = @"c:\images";
+            var files = new[]
+            {
+                new { pathfile = @"c:\images\Vacation\20180606-100404.jpg", length = 15, lastAccessTime = CreateAsUtc("2010-01-16 11:16:33Z") },
+                new { pathfile = @"c:\images\2018\201809\20180925-220604.jpg", length = 2, lastAccessTime = CreateAsUtc("2010-01-03 11:03:33Z") },
+                new { pathfile = @"c:\images\2018\201809\20180925-220502.jpg", length = 4, lastAccessTime = CreateAsUtc("2010-01-05 11:05:33Z") },
+                new { pathfile = @"c:\images\iphone backup\20180925-2207.jpg", length = 3, lastAccessTime = CreateAsUtc("2010-01-04 11:04:33Z") },
+                new { pathfile = @"c:\images\stray image.jpg", length = 4, lastAccessTime = CreateAsUtc("2010-01-05 11:05:34Z") }
             };
 
             var mockedFileSystem = new MockFileSystem(
@@ -133,19 +167,19 @@ namespace LehmanLaidun.FileSystem.Test
                 XDocument.Parse(@"
 <root path='c:\images'>
     <directory name=''>
-        <file name='stray image.jpg' length='4' lastWriteTime='2010-01-05 12:22:33Z'/>
+        <file name='stray image.jpg' length='4' lastWriteTime='2010-01-05T11:05:34.0000000Z'/>
     </directory>
     <directory name='Vacation'>
-        <file name='20180606-100404.jpg' length='15' lastWriteTime='2010-01-16 12:22:33Z'/>
+        <file name='20180606-100404.jpg' length='15' lastWriteTime='2010-01-16T11:16:33.0000000Z'/>
     </directory>
     <directory name='2018'>
         <directory name='201809'>
-            <file name='20180925-220604.jpg' length='2' lastWriteTime='2010-01-03 12:22:33Z'/>
-            <file name='20180925-220502.jpg' length='4' lastWriteTime='2010-01-05 12:22:33Z'/>
+            <file name='20180925-220604.jpg' length='2' lastWriteTime='2010-01-03T11:03:33.0000000Z'/>
+            <file name='20180925-220502.jpg' length='4' lastWriteTime='2010-01-05T11:05:33.0000000Z'/>
         </directory>
     </directory>
     <directory name='iphone backup'>
-        <file name='20180925-2207.jpg' length='3' lastWriteTime='2010-01-04 12:22:33Z'/>
+        <file name='20180925-2207.jpg' length='3' lastWriteTime='2010-01-04T11:04:33.0000000Z'/>
     </directory>
 </root>
 "));
@@ -242,6 +276,16 @@ namespace LehmanLaidun.FileSystem.Test
             return ret;
         }
 
-        #endregion
-    }
+        /// <summary>This helper method parses the parameter 
+        /// and returns a datetime in UTC.
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        private static DateTime CreateAsUtc(string s)
+        {
+            return DateTime.Parse(s, null, System.Globalization.DateTimeStyles.AdjustToUniversal);
+        }
+
+    #endregion
+}
 }

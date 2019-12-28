@@ -50,7 +50,7 @@ namespace LehmanLaidun.FileSystem
                 Logic.ElementNameFile,
                 new XAttribute(Logic.AttributeNameName, file.Name),
                 new XAttribute(Logic.AttributeNameLength, file.Length), 
-                new XAttribute(Logic.AttributeNameLastWriteTime, file.LastWriteTime.ToString("u"))
+                new XAttribute(Logic.AttributeNameLastWriteTime, file.LastWriteTime.ToString("o"))
             );
             element.AddElement(newElement);
             return newElement;
