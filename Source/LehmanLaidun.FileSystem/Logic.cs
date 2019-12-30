@@ -151,8 +151,8 @@ namespace LehmanLaidun.FileSystem
         /// <returns></returns>
         public static (bool Result, IEnumerable<Difference> Differences) CompareXml(XDocument xml1, XDocument xml2)
         {
-            var firstResult = Compare(xml1.Root, xml2.Root, 0, FoundOnlyIn.First);
-            var secondResult = Compare(xml2.Root, xml1.Root, 0, FoundOnlyIn.Second);
+            var firstResult = Compare(xml1.Root, xml2.Root, FoundOnlyIn.First);
+            var secondResult = Compare(xml2.Root, xml1.Root, FoundOnlyIn.Second);
             var result = firstResult.Concat(secondResult);
             return (result.Any() == false, result);
         }
@@ -206,7 +206,7 @@ namespace LehmanLaidun.FileSystem
 
         #region Private helper methods.
 
-        private static IEnumerable<Difference> Compare(XElement firstElement, XElement secondElement, int rowNum, FoundOnlyIn foundOnlyIn)
+        private static IEnumerable<Difference> Compare(XElement firstElement, XElement secondElement, FoundOnlyIn foundOnlyIn)
         {
             var diffs = new List<Difference>();
 
@@ -222,7 +222,7 @@ namespace LehmanLaidun.FileSystem
             }
             foreach (var child in firstElement.Elements())
             {
-                diffs.AddRange(Compare(child, secondElement, 0, foundOnlyIn));
+                diffs.AddRange(Compare(child, secondElement, foundOnlyIn));
             }
             return diffs;
         }

@@ -12,7 +12,7 @@ namespace LehmanLaidun.FileSystem.Test
     public partial class ControlTest
     {
         [DataTestMethod]
-        [DynamicData(nameof(CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucureTestData))]
+        [DynamicData(nameof(CanCompareXml_ReturnEqualAndNoDifferenceForSameStructureTestData))]
         public void CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucure(string xml1, string xml2, string message)
         {
             //  #   Act.
@@ -25,7 +25,7 @@ namespace LehmanLaidun.FileSystem.Test
 
         [TestMethod]
         [DynamicData(nameof(CanCompareXml_ReturnNotEqualAndDIfferencesTestData))]
-        public void CanCompareXml_ReturnNotEqualAndDIfferences(
+        public void CanCompareXml_ReturnNotEqualAndDifferences(
             string firstXml,
             string secondXml,
             IEnumerable<Difference> differences,

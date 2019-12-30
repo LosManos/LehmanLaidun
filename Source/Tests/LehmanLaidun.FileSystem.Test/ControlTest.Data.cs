@@ -5,7 +5,7 @@ namespace LehmanLaidun.FileSystem.Test
 {
     partial class ControlTest
     {
-        private static IEnumerable<object[]> CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucureTestData
+        private static IEnumerable<object[]> CanCompareXml_ReturnEqualAndNoDifferenceForSameStructureTestData
         {
             get
             {
