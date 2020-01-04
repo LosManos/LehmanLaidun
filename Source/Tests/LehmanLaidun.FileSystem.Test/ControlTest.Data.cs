@@ -10,48 +10,55 @@ namespace LehmanLaidun.FileSystem.Test
             get
             {
                 yield return CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucureTestDataClass.Create(
+                    "A simple root should be equal to itself.",
                     @"<root/>",
                     @"<root/>",
-                    "A simple root should be equal to itself.")
+                    new string[0])
                     .ToObjectArray();
 
                 yield return CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucureTestDataClass.Create(
+                    "The attributes of the root does not matter.",
                     @"<root a='b'/>",
                     @"<root/>",
-                    "The attributes of the root does not matter.")
+                    new[] { "*" })
                     .ToObjectArray();
 
                 yield return CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucureTestDataClass.Create(
+                    "Elements can be both simple and complex. (what is it called?)",
                     @"<root/>",
                     @"<root></root>",
-                    "Elements can be both simple and complex. (what is uit called?)")
+                    new string[0])
                     .ToObjectArray();
 
                 yield return CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucureTestDataClass.Create(
+                    "Sub-root element can be both simple and complex. (what is it called?)",
                     @"
                     <root>
                         <directory/>;
-                    </root>", @"
+                    </root>", 
+                    @"
                     <root>
                         <directory></directory>
                     </root>",
-                    "Sub-root element can be both simple and complex. (what is it called?)")
+                    new string[0])
                     .ToObjectArray();
 
                 yield return CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucureTestDataClass.Create(
+                    "The ordering of the elements does not care.",
                     @"
                     <root>
                         <a/>
-                        <b/>l
+                        <b/>
                     </root>", @"
                     <root>
                         <b/>
                         <a/>
                     </root>",
-                    "The ordering of the elements does not care.")
+                    new string[0])
                     .ToObjectArray();
 
                 yield return CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucureTestDataClass.Create(
+                    "The ordering of the attributes does not matter.",
                     @"
                     <root>
                         <a b='c' d='e'/>
@@ -59,23 +66,26 @@ namespace LehmanLaidun.FileSystem.Test
                     <root>
                         <a d='e' b='c'/>
                     </root>",
-                    "The ordering of the attributes does note care.")
+                    new[] { "*" })
                     .ToObjectArray();
 
                 yield return CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucureTestDataClass.Create(
+                    "Neither the ordering of the elements nor the attributes care.",
                     @"
                     <root>
                         <a/>
                         <b c='d' e='f'/>
-                    </root>", @"
+                    </root>", 
+                    @"
                     <root>
                         <b e='f' c='d'/>
                         <a/>
                     </root>",
-                    "Neither the ordering of the elements nore the attributes care.")
+                    new[] { "*" })
                     .ToObjectArray();
 
                 yield return CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucureTestDataClass.Create(
+                    "The ordering of sub elements does not care.",
                     @"
                 <root>
                     <a>
@@ -93,78 +103,156 @@ namespace LehmanLaidun.FileSystem.Test
                         <b/>
                     </a>
                 </root>",
-                "The ordering of sub elements does not care.")
+                    new string[0])
+                .ToObjectArray();
+
+                yield return CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucureTestDataClass.Create(
+                    "Only chosen attributes are compared",
+                    @"<root><a b='c' d='e'/></root>",
+                    @"<root><a b='d' d='e'/></root>",
+                    new[] { "d" })
+                .ToObjectArray();
+
+                yield return CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucureTestDataClass.Create(
+                    "Some attributes should be included so the xmls should be equal.",
+                    "<root><a b='c' d='e'/></root>",
+                    "<root><a b='c' f='g'/></root>",
+                    new[] { "b" })
+                .ToObjectArray();
+
+                yield return CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucureTestDataClass.Create(
+                    "No attributes should be included in the comparison",
+                    "<root><a b='c'/></root>",
+                    "<root><a d='e'/></root>",
+                    new string[0])
                 .ToObjectArray();
             }
         }
 
-        private static IEnumerable<object[]> CanCompareXml_ReturnNotEqualAndDIfferencesTestData
+        private static IEnumerable<object[]> CanCompareXml_ReturnNotEqualAndDifferencesTestData
         {
             get
             {
                 // Indata with stuff found only in the *first* tree.
                 //
-                yield return CanCompareXml_ReturnNotEqualAndDIfferencesTestDataClass.Create(
-                    "The element should be found only in the first tree.",
+                yield return CanCompareXml_ReturnNotEqualAndDifferencesTestDataClass.Create(
+                    "The element should be found only in the first tree and we don't want any attribute at all",
                     "<root><a/></root>",
                     "<root></root>",
+                    new[] {"&"},
                     Difference.Create(new XElement("a"), "/root/a[not(@*)]", Difference.FoundOnlyIn.First)
                 ).ToObjectArray();
-                yield return CanCompareXml_ReturnNotEqualAndDIfferencesTestDataClass.Create(
+                yield return CanCompareXml_ReturnNotEqualAndDifferencesTestDataClass.Create(
+                    "The element should be found only in the first tree and we don't care about attributes",
+                    "<root><a/></root>",
+                    "<root></root>",
+                    new string[0],
+                    Difference.Create(new XElement("a"), "/root/a", Difference.FoundOnlyIn.First)
+                ).ToObjectArray();
+                yield return CanCompareXml_ReturnNotEqualAndDifferencesTestDataClass.Create(
                     "The inner element should be found only in the first tree.",
                     "<root><a><b/></a></root>",
                     "<root><a/></root>",
-                    Difference.Create(new XElement("b"), "/root/a[not(@*)]/b[not(@*)]", Difference.FoundOnlyIn.First)
+                    new string[0],
+                    Difference.Create(new XElement("b"), "/root/a/b", Difference.FoundOnlyIn.First)
                 ).ToObjectArray();
-                yield return CanCompareXml_ReturnNotEqualAndDIfferencesTestDataClass.Create(
+                yield return CanCompareXml_ReturnNotEqualAndDifferencesTestDataClass.Create(
                     "Element with attributes differs from one without. The attributes are in the first tree.",
                     "<root><a b='c'/></root>",
                     "<root><a/></root>",
+                    new[] {"*"},
                     Difference.Create(new XElement("a", new XAttribute("b", "c")), "/root/a[@b='c']", Difference.FoundOnlyIn.First),
                     Difference.Create(new XElement("a"), "/root/a[not(@*)]", Difference.FoundOnlyIn.Second)
                 ).ToObjectArray();
-                yield return CanCompareXml_ReturnNotEqualAndDIfferencesTestDataClass.Create(
+                yield return CanCompareXml_ReturnNotEqualAndDifferencesTestDataClass.Create(
                     "The sequence elements should be found only in the first tree.",
                     "<root><a/><b/></root>",
                     "<root></root>",
+                    new[] { "&" },
                         Difference.Create(new XElement("a"), "/root/a[not(@*)]", Difference.FoundOnlyIn.First),
                         Difference.Create(new XElement("b"), "/root/b[not(@*)]", Difference.FoundOnlyIn.First)
                 ).ToObjectArray();
 
                 //  Testdata with stuff found only in the *second* tree.
                 //
-                yield return CanCompareXml_ReturnNotEqualAndDIfferencesTestDataClass.Create(
+                yield return CanCompareXml_ReturnNotEqualAndDifferencesTestDataClass.Create(
                     "The element should be found only in the second tree.",
                     "<root></root>",
                     "<root><a/></root>",
+                    new[] { "&" },
                     Difference.Create(new XElement("a"), "/root/a[not(@*)]", Difference.FoundOnlyIn.Second)
                 ).ToObjectArray();
-                yield return CanCompareXml_ReturnNotEqualAndDIfferencesTestDataClass.Create(
+                yield return CanCompareXml_ReturnNotEqualAndDifferencesTestDataClass.Create(
                     "The inner element should be found only in the second tree.",
                     "<root><a/></root>",
                     "<root><a><b/></a></root>",
+                    new[] { "&" },
                     Difference.Create(new XElement("b"), "/root/a[not(@*)]/b[not(@*)]", Difference.FoundOnlyIn.Second)
                 ).ToObjectArray();
-                yield return CanCompareXml_ReturnNotEqualAndDIfferencesTestDataClass.Create(
+                yield return CanCompareXml_ReturnNotEqualAndDifferencesTestDataClass.Create(
                     "The element with attributes should be found only in the second tree.",
                     "<root><a/></root>",
                     "<root><a b='c'/></root>",
+                    new[] { "b" },
                     Difference.Create(new XElement("a"), "/root/a[not(@*)]", Difference.FoundOnlyIn.First),
                     Difference.Create(new XElement("a", new XAttribute("b", "c")), "/root/a[@b='c']", Difference.FoundOnlyIn.Second)
                 ).ToObjectArray();
-                yield return CanCompareXml_ReturnNotEqualAndDIfferencesTestDataClass.Create(
+                yield return CanCompareXml_ReturnNotEqualAndDifferencesTestDataClass.Create(
                     "The elements should be found only in the second tree.",
                     "<root></root>",
                     "<root><a/><b/></root>",
+                    new[] { "&" },
                     Difference.Create(new XElement("a"), "/root/a[not(@*)]", Difference.FoundOnlyIn.Second),
                     Difference.Create(new XElement("b"), "/root/b[not(@*)]", Difference.FoundOnlyIn.Second)
                 ).ToObjectArray();
-                yield return CanCompareXml_ReturnNotEqualAndDIfferencesTestDataClass.Create(
+                yield return CanCompareXml_ReturnNotEqualAndDifferencesTestDataClass.Create(
                     "Elements with only attributes differing should be found.",
                     "<root><a b='c'/></root>",
                     "<root><a d='e'/></root>",
+                    new[] {"b", "d"},
                     Difference.Create(new XElement("a", new XAttribute("b", "c")), "/root/a[@b='c']", Difference.FoundOnlyIn.First),
                     Difference.Create(new XElement("a", new XAttribute("d", "e")), "/root/a[@d='e']", Difference.FoundOnlyIn.Second)
+                ).ToObjectArray();
+
+                //  Test data for verifying only certain attributes are compared.
+                //
+                yield return CanCompareXml_ReturnNotEqualAndDifferencesTestDataClass.Create(
+                    "All attributes should be included so the xmls should differ.",
+                    "<root><a b='c' d='e'/></root>",
+                    "<root><a b='c' f='g'/></root>",
+                    new[] { "*" },
+                    Difference.Create(new XElement("a",
+                        new[] {
+                            new XAttribute("b", "c"),
+                            new XAttribute("d", "e")
+                        }), "/root/a[@b='c' and @d='e']",
+                        Difference.FoundOnlyIn.First),
+                    Difference.Create(new XElement("a",
+                        new[] {
+                            new XAttribute("b", "c"),
+                            new XAttribute("f", "g") 
+                        }), "/root/a[@b='c' and @f='g']", 
+                        Difference.FoundOnlyIn.Second)
+                ).ToObjectArray();
+
+                yield return CanCompareXml_ReturnNotEqualAndDifferencesTestDataClass.Create(
+                    "Some (i.e. all) attributes should be included so the xmls should differ.",
+                    "<root><a b='c' d='e'/></root>",
+                    "<root><a b='c' f='g'/></root>",
+                    new[] { "b", "d", "f" },
+                    Difference.Create(
+                        new XElement("a", 
+                        new[] {
+                            new XAttribute("b", "c"),
+                            new XAttribute("d", "e")
+                        }), "/root/a[@b='c' and @d='e']", 
+                        Difference.FoundOnlyIn.First),
+                    Difference.Create(new XElement("a", 
+                        new[]{
+                            new XAttribute("b","c"),
+                            new XAttribute("f", "g")
+                        }), "/root/a[@b='c' and @f='g']", 
+                        Difference.FoundOnlyIn.Second)
                 ).ToObjectArray();
             }
         }
@@ -423,17 +511,19 @@ namespace LehmanLaidun.FileSystem.Test
         {
             internal string Xml1 { get; }
             internal string Xml2 { get; }
+            public IEnumerable<string> ComparedAttributeKeys { get; }
             internal string Message { get; }
 
-            internal static CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucureTestDataClass Create(string xml1, string xml2, string message)
+            internal static CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucureTestDataClass Create(string message, string xml1, string xml2, IEnumerable<string> comparedAttributeKeys)
             {
-                return new CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucureTestDataClass(xml1, xml2, message);
+                return new CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucureTestDataClass(xml1, xml2, comparedAttributeKeys, message);
             }
 
-            private CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucureTestDataClass(string xml1, string xml2, string message)
+            private CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucureTestDataClass(string xml1, string xml2, IEnumerable<string> comparedAttributeKeys, string message)
             {
                 Xml1 = xml1;
                 Xml2 = xml2;
+                ComparedAttributeKeys = comparedAttributeKeys;
                 Message = message;
             }
 
@@ -443,37 +533,42 @@ namespace LehmanLaidun.FileSystem.Test
                 {
                     Xml1,
                     Xml2,
+                    ComparedAttributeKeys,
                     Message
                 };
             }
 
         }
 
-        private class CanCompareXml_ReturnNotEqualAndDIfferencesTestDataClass
+        private class CanCompareXml_ReturnNotEqualAndDifferencesTestDataClass
         {
             internal string FirstXml { get; }
             internal string SecondXml { get; }
+            public IEnumerable<string> ComparedAttributeKeys { get; }
             internal IEnumerable<Difference> Differences { get; }
             internal string Message { get; }
 
-            internal static CanCompareXml_ReturnNotEqualAndDIfferencesTestDataClass Create(
+            internal static CanCompareXml_ReturnNotEqualAndDifferencesTestDataClass Create(
                 string message,
                 string firstXml,
                 string secondXml,
+                IEnumerable<string> comparedAttributeKeys,
                 params Difference[] differences)
             {
-                return new CanCompareXml_ReturnNotEqualAndDIfferencesTestDataClass(message, firstXml, secondXml, differences);
+                return new CanCompareXml_ReturnNotEqualAndDifferencesTestDataClass(message, firstXml, secondXml, comparedAttributeKeys, differences);
             }
 
-            private CanCompareXml_ReturnNotEqualAndDIfferencesTestDataClass(
+            private CanCompareXml_ReturnNotEqualAndDifferencesTestDataClass(
                 string message,
                 string firstXml,
                 string secondXml,
+                IEnumerable<string> comparedAttributeKeys,
                 params Difference[] differences)
             {
                 Message = message;
                 FirstXml = firstXml;
                 SecondXml = secondXml;
+                ComparedAttributeKeys = comparedAttributeKeys;
                 Differences = differences;
             }
 
@@ -483,6 +578,7 @@ namespace LehmanLaidun.FileSystem.Test
                 {
                     FirstXml,
                     SecondXml,
+                    ComparedAttributeKeys,
                     Differences,
                     Message
                 };

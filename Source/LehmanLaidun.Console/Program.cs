@@ -36,7 +36,7 @@ namespace LehmanLaidun.Console
             var myFiles = LogicFactory.CreateForPath(new System.IO.Abstractions.FileSystem(), myFilesRoot).AsXDocument();
             var theirFiles = LogicFactory.CreateForPath(new System.IO.Abstractions.FileSystem(), theirFilesRoot).AsXDocument();
 
-            var differences = Logic.CompareXml(myFiles, theirFiles);
+            var differences = Logic.CompareXml(myFiles, theirFiles, new[] { "name", "length" });
 
             //TODO:Make other output if differences.Result == true;
 

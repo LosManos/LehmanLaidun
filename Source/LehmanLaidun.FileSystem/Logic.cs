@@ -148,11 +148,20 @@ namespace LehmanLaidun.FileSystem
         /// </summary>
         /// <param name="xml1"></param>
         /// <param name="xml2"></param>
+        /// <param name="comparedAttributeKeys"></param>
         /// <returns></returns>
-        public static (bool Result, IEnumerable<Difference> Differences) CompareXml(XDocument xml1, XDocument xml2)
+        public static (bool Result, IEnumerable<Difference> Differences) CompareXml(
+            XDocument xml1, 
+            XDocument xml2, 
+            IEnumerable<string> comparedAttributeKeys)
         {
-            var firstResult = Compare(xml1.Root, xml2.Root, FoundOnlyIn.First);
-            var secondResult = Compare(xml2.Root, xml1.Root, FoundOnlyIn.Second);
+            if (comparedAttributeKeys is null)
+            {
+                throw new ArgumentNullException(nameof(comparedAttributeKeys));
+            }
+
+            var firstResult = Compare(xml1.Root, xml2.Root, comparedAttributeKeys, FoundOnlyIn.First);
+            var secondResult = Compare(xml2.Root, xml1.Root, comparedAttributeKeys, FoundOnlyIn.Second);
             var result = firstResult.Concat(secondResult);
             return (result.Any() == false, result);
         }
@@ -167,7 +176,7 @@ namespace LehmanLaidun.FileSystem
         {
             var fd = ListOfElementsWithXpaths(doc.Root);
             var lst = fd.Where(f => f.Value.Count() >= 2);
-            return lst.Select(f => Duplicate.Create(f.Value.First().ShallowCopy(), f.Value.Select(g => GetXPathOf(g))));
+            return lst.Select(f => Duplicate.Create(f.Value.First().ShallowCopy(), f.Value.Select(g => GetXPathOf(g, new[] { "*" }))));
         }
 
         /// <summary>This method returns a list of similar elements in an Xml document.
@@ -196,7 +205,7 @@ namespace LehmanLaidun.FileSystem
                         {
                             if (rule.Comparers.All(c => c(FirstElement: firstElement, SecondElement: secondElement)))
                             {
-                                yield return Similar.Create(rule.RuleName, firstElement.ShallowCopy(), GetXPathOf(firstElement), secondElement.ShallowCopy(), GetXPathOf(secondElement));
+                                yield return Similar.Create(rule.RuleName, firstElement.ShallowCopy(), GetXPathOf(firstElement, new[] { "*" }), secondElement.ShallowCopy(), GetXPathOf(secondElement, new[] { "*" }));
                             }
                         }
                     }
@@ -206,23 +215,27 @@ namespace LehmanLaidun.FileSystem
 
         #region Private helper methods.
 
-        private static IEnumerable<Difference> Compare(XElement firstElement, XElement secondElement, FoundOnlyIn foundOnlyIn)
+        private static IEnumerable<Difference> Compare(
+            XElement firstElement, 
+            XElement secondElement, 
+            IEnumerable<string> comparedAttributeKeys,
+            FoundOnlyIn foundOnlyIn)
         {
             var diffs = new List<Difference>();
 
-            var firstXPath = GetXPathOf(firstElement);
-            var existingElementsInSecond = secondElement.Document.XPathSelectElements(firstXPath);
-            if (existingElementsInSecond.Any() == false)
+            var firstXPath = GetXPathOf(firstElement, comparedAttributeKeys);
+            var elementsInSecond = secondElement.Document.XPathSelectElements(firstXPath);
+            if (elementsInSecond.Any() == false)
             {
                 diffs.Add(Difference.Create(firstElement.ShallowCopy(), firstXPath, foundOnlyIn));
             }
-            else if (existingElementsInSecond.Count() == 1)
+            else if (elementsInSecond.Count() == 1)
             {
                 // OK.
             }
             foreach (var child in firstElement.Elements())
             {
-                diffs.AddRange(Compare(child, secondElement, foundOnlyIn));
+                diffs.AddRange(Compare(child, secondElement, comparedAttributeKeys, foundOnlyIn));
             }
             return diffs;
         }
@@ -269,8 +282,9 @@ namespace LehmanLaidun.FileSystem
         /// </code>
         /// </summary>
         /// <param name="element"></param>
+        /// <param name="comparedAttributeKeys"></param>
         /// <returns></returns>
-        private static string GetXPathOf(XElement element)
+        private static string GetXPathOf(XElement element, IEnumerable<string> comparedAttributeKeys)
         {
             var root = element.Parents().Last();
             var elementPath =
@@ -278,28 +292,70 @@ namespace LehmanLaidun.FileSystem
                 element
                     .Parents()
                     .Reverse()
-                    .Select(e => e.Name.LocalName + (e == root ? string.Empty : GetXPathOf(e.Attributes())))
+                    .Select(e => e.Name.LocalName + (
+                        e == root ? 
+                            string.Empty : 
+                            GetXPathOf(e.Attributes(), comparedAttributeKeys)
+                        )
+                    )
                     .StringJoin("/");
             return elementPath;
         }
 
         /// <summary>This method returns the attributes as "an xpath string"
         /// Attributes like a='b' c='d' returns "[@a='b' and @c='d']".
-        /// Note that the variable names anv valies are not escaped properlty.
+        /// 
+        /// The parameter ` comparedAttributeKeys`  is used for setting which attributes
+        /// are included in the comparison.
+        /// ` new string[0]`  means no attributes are used for comparison.
+        /// ` new []{"&"}`  means there should be no attributes at all.
+        /// ` new []{"*"}`  means all attributes are used in the comparison.
+        /// ` new []{"a","b"} means attributes "a" and "b" but not "c" are used in the comparison.
+        /// 
+        /// Note that the variable names and values are not escaped properly.
         /// </summary>
         /// <param name="attributes"></param>
+        /// <param name="comparedAttributeKeys"></param>
         /// <returns></returns>
-        private static string GetXPathOf(IEnumerable<XAttribute> attributes)
+        private static string GetXPathOf(IEnumerable<XAttribute> attributes, IEnumerable<string> comparedAttributeKeys)
         {
+            IEnumerable<XAttribute> ComparedAttributes()
+            {
+                //  We are about all attributes.
+                if (comparedAttributeKeys.First() == "*")
+                {
+                    return attributes;
+                }
+                // We care only about some attributes.
+                return attributes
+                     .Where(a => comparedAttributeKeys.ToList()
+                     .Contains(a.Name.LocalName));
+            }
+
+            // We don't care about any attribute.
+            if (comparedAttributeKeys.Any() == false)
+            {
+                return string.Empty;
+            }
+
+            // There should not be any attribute.
+            if ( comparedAttributeKeys.Any()  && comparedAttributeKeys.First() == "&")
+            {
+                return "[not(@*)]";
+            }
+
+            // There are no attributes in the element so there is nothing to compare.
+            if( attributes.Any() == false)
+            {
+                return string.Empty;
+            }
+
             return
                 "[" +
-                (attributes.Any() ?
-                    // TODO: Escape the values.
-                    attributes
-                        .Select(a => $"@{a.Name}='{a.Value}'")
-                        .StringJoin(" and ") :
-                    "not(@*)"
-                ) +
+                // TODO: Escape the values.
+                ComparedAttributes()
+                    .Select(a => $"@{a.Name}='{a.Value}'")
+                    .StringJoin(" and ") +
                 "]";
 
         }

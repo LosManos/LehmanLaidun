@@ -13,10 +13,10 @@ namespace LehmanLaidun.FileSystem.Test
     {
         [DataTestMethod]
         [DynamicData(nameof(CanCompareXml_ReturnEqualAndNoDifferenceForSameStructureTestData))]
-        public void CanCompareXml_ReturnEqualAndNoDifferenceForSameStrucure(string xml1, string xml2, string message)
+        public void CanCompareXml_ReturnEqualAndNoDifferenceForSameStructure(string xml1, string xml2, IEnumerable<string> comparedAttributeKeys, string message)
         {
             //  #   Act.
-            var res = Logic.CompareXml(XDocument.Parse(xml1), XDocument.Parse(xml2));
+            var res = Logic.CompareXml(XDocument.Parse(xml1), XDocument.Parse(xml2), comparedAttributeKeys);
 
             //  #   Assert.
             res.Result.Should().BeTrue("The XMLs are of equal strucure." + message);
@@ -24,19 +24,20 @@ namespace LehmanLaidun.FileSystem.Test
         }
 
         [TestMethod]
-        [DynamicData(nameof(CanCompareXml_ReturnNotEqualAndDIfferencesTestData))]
+        [DynamicData(nameof(CanCompareXml_ReturnNotEqualAndDifferencesTestData))]
         public void CanCompareXml_ReturnNotEqualAndDifferences(
             string firstXml,
             string secondXml,
+            IEnumerable<string> comparedAttributeKeys,
             IEnumerable<Difference> differences,
             string message)
         {
             //  #   Act.
-            var res = Logic.CompareXml(XDocument.Parse(firstXml), XDocument.Parse(secondXml));
+            var res = Logic.CompareXml(XDocument.Parse(firstXml), XDocument.Parse(secondXml), comparedAttributeKeys);
 
             //  #   Assert.
             res.Result.Should().BeFalse("The comparision should have failed." + message);
-            Assert_Differences(res.Differences, CanCompareXml_ReturnNotEqualAndDIfferencesTestDataClass.Create(message, firstXml, secondXml, differences.ToArray()));
+            Assert_Differences(res.Differences, CanCompareXml_ReturnNotEqualAndDifferencesTestDataClass.Create(message, firstXml, secondXml, comparedAttributeKeys, differences.ToArray()));
         }
 
         [TestMethod]
@@ -224,7 +225,7 @@ namespace LehmanLaidun.FileSystem.Test
 
         private static void Assert_Differences
             (IEnumerable<Difference> actualDifferences,
-            CanCompareXml_ReturnNotEqualAndDIfferencesTestDataClass expectedTestDatum)
+            CanCompareXml_ReturnNotEqualAndDifferencesTestDataClass expectedTestDatum)
         {
             foreach (var diff in actualDifferences)
             {
