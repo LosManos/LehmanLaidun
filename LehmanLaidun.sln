@@ -18,6 +18,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LehmanLaidun.Console", "Sou
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LehmanLaidun.FileSystem", "Source\LehmanLaidun.FileSystem\LehmanLaidun.FileSystem.csproj", "{A06FD4A0-C80E-4EB4-8F84-20FD5EF9154F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LehmanLaidun.Console.Test", "Source\Tests\LehmanLaidun.Console.Test\LehmanLaidun.Console.Test.csproj", "{DD74581C-D96A-41B8-A812-C5069E23DD96}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,12 +38,17 @@ Global
 		{A06FD4A0-C80E-4EB4-8F84-20FD5EF9154F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A06FD4A0-C80E-4EB4-8F84-20FD5EF9154F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A06FD4A0-C80E-4EB4-8F84-20FD5EF9154F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD74581C-D96A-41B8-A812-C5069E23DD96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD74581C-D96A-41B8-A812-C5069E23DD96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD74581C-D96A-41B8-A812-C5069E23DD96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD74581C-D96A-41B8-A812-C5069E23DD96}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{FAAA187B-F9B2-4DF5-A8A9-935C794C8727} = {3212840E-B96D-4623-AD78-50563EBC6B75}
+		{DD74581C-D96A-41B8-A812-C5069E23DD96} = {3212840E-B96D-4623-AD78-50563EBC6B75}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C5C074B9-AF10-43AB-9C07-71C12F04EE09}
