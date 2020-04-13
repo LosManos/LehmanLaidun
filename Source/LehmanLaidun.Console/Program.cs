@@ -47,9 +47,13 @@ namespace LehmanLaidun.Console
 
         private static void OutputMessage()
         {
+            C.WriteLine("* LehmanLaidun.Console *");
             C.WriteLine("This program compares two directory trees and returns the differences.");
-            C.WriteLine("Usage");
+            C.WriteLine();
+            C.WriteLine("Examples of usage:");
             C.WriteLine("dotnet LehmanLaidun.Console.dll \"C:\\MyMusic\" E:\\");
+            C.WriteLine("Or:");
+            C.WriteLine(@".\bin\Debug\netcoreapp3.1\LehmanLaidun.Console.exe .\Data\MyDrive\ .\Data\TheirDrive\");
         }
 
         private static void OutputResult((bool Result, IEnumerable<Difference> Differences) diff)
