@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Xml.Linq;
@@ -83,53 +84,53 @@ namespace LehmanLaidun.FileSystem.Test
         public void CanReturnListWithAllPropertiesSet()
         {
             //  #   Arrange.
-            const string Path = @"c:\images";
+            var path = Path.DirectorySeparatorChar + @"images";
             var files = new[] {
-                new { pathfile = @"c:\images\20180924\image1.jpg", length = 3, lastAccessTime = DateTime.Parse("2010-01-04 11:22:33Z") },
-                new { pathfile = @"c:\images\20180922\image3.jpg", length = 5, lastAccessTime = DateTime.Parse("2010-01-06 11:22:33Z") },
-                new { pathfile = @"c:\images\image2.jpg", length = 12, lastAccessTime = DateTime.Parse("2010-01-13 11:22:33Z") }
+                new { pathfile = Path.Combine(path,"20180924","image1.jpg"), length = 3, lastAccessTime = DateTime.Parse("2010-01-04 11:22:33Z") },
+                new { pathfile = Path.Combine(path,"20180922","image3.jpg"), length = 5, lastAccessTime = DateTime.Parse("2010-01-06 11:22:33Z") },
+                new { pathfile = Path.Combine(path,"image2.jpg"), length = 12, lastAccessTime = DateTime.Parse("2010-01-13 11:22:33Z") }
             };
 
             var mockedFileSystem = new MockFileSystem(
-                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length, pf.lastAccessTime))
+                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length, pf.lastAccessTime)), 
+                path
             );
 
-            var sut = LogicFactory.CreateForPath(mockedFileSystem, Path);
+           var sut = LogicFactory.CreateForPath(mockedFileSystem, path);
 
             //  #   Act.
             var res = sut.AsEnumerableFiles();
 
             //  #   Assert.
             res.Should().BeEquivalentTo(
-                files.Select(f => CreateFileItem(f.pathfile, f.length, f.lastAccessTime))
-            );
+                files.Select(f => CreateFileItem(f.pathfile, f.length, f.lastAccessTime)
+)            );
         }
 
         [TestMethod]
         public void CanReturnWithAllPropertiesSet()
         {
-            const string Path = @"c:\images";
+            var path = Path.DirectorySeparatorChar + @"images";
             var files = new[]
             {
                 new { 
-                    pathfile = @"c:\images\Vacation\20180606-100404.jpg", 
-                    length = 15, 
-                    lastAccessTime = CreateAsUtc("2010-01-16 11:16:33Z") },
+                    pathfile = Path.Combine(path, "Vacation", "20180606-100404.jpg"), length = 15, lastAccessTime = CreateAsUtc("2010-01-16 11:16:33Z") },
             };
 
             var mockedFileSystem = new MockFileSystem(
-                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length, pf.lastAccessTime))
+                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length, pf.lastAccessTime)), 
+                path
             );
 
-            var sut = LogicFactory.CreateForPath(mockedFileSystem, Path);
+            var sut = LogicFactory.CreateForPath(mockedFileSystem, path);
 
             //  #   Act.
             var res = sut.AsXDocument();
 
             //  #   Assert.
             res.Should().BeEquivalentTo(
-                XDocument.Parse(@"
-<root path='c:\images'>
+                XDocument.Parse(@$"
+<root path='{path}'>
     <directory name='Vacation'>
         <file name='20180606-100404.jpg' length='15' lastWriteTime='2010-01-16T11:16:33.0000000Z'/>
     </directory>
@@ -144,29 +145,30 @@ namespace LehmanLaidun.FileSystem.Test
         [TestMethod]
         public void CanReturnXml()
         {
-            const string Path = @"c:\images";
+            var path = Path.DirectorySeparatorChar +  "images";
             var files = new[]
             {
-                new { pathfile = @"c:\images\Vacation\20180606-100404.jpg", length = 15, lastAccessTime = CreateAsUtc("2010-01-16 11:16:33Z") },
-                new { pathfile = @"c:\images\2018\201809\20180925-220604.jpg", length = 2, lastAccessTime = CreateAsUtc("2010-01-03 11:03:33Z") },
-                new { pathfile = @"c:\images\2018\201809\20180925-220502.jpg", length = 4, lastAccessTime = CreateAsUtc("2010-01-05 11:05:33Z") },
-                new { pathfile = @"c:\images\iphone backup\20180925-2207.jpg", length = 3, lastAccessTime = CreateAsUtc("2010-01-04 11:04:33Z") },
-                new { pathfile = @"c:\images\stray image.jpg", length = 4, lastAccessTime = CreateAsUtc("2010-01-05 11:05:34Z") }
+                new { pathfile = Path.Combine(path, "Vacation", "20180606-100404.jpg"), length = 15, lastAccessTime = CreateAsUtc("2010-01-16 11:16:33Z") },
+                new { pathfile = Path.Combine(path, "2018", "201809","20180925-220604.jpg"), length = 2, lastAccessTime = CreateAsUtc("2010-01-03 11:03:33Z") },
+                new { pathfile = Path.Combine(path, "2018", "201809", "20180925-220502.jpg"), length = 4, lastAccessTime = CreateAsUtc("2010-01-05 11:05:33Z") },
+                new { pathfile = Path.Combine("iphone backup", "20180925-2207.jpg"), length = 3, lastAccessTime = CreateAsUtc("2010-01-04 11:04:33Z") },
+                new { pathfile = Path.Combine(path, "stray image.jpg"), length = 4, lastAccessTime = CreateAsUtc("2010-01-05 11:05:34Z") }
             };
 
             var mockedFileSystem = new MockFileSystem(
-                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length, pf.lastAccessTime))
+                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length, pf.lastAccessTime)), 
+                path
             );
 
-            var sut = LogicFactory.CreateForPath(mockedFileSystem, Path);
+            var sut = LogicFactory.CreateForPath(mockedFileSystem, path);
 
             //  #   Act.
             var res = sut.AsXDocument();
 
             //  #   Assert.
             res.Should().BeEquivalentTo(
-                XDocument.Parse(@"
-<root path='c:\images'>
+                XDocument.Parse(@$"
+<root path='{path}'>
     <directory name=''>
         <file name='stray image.jpg' length='4' lastWriteTime='2010-01-05T11:05:34.0000000Z'/>
     </directory>
@@ -202,17 +204,18 @@ namespace LehmanLaidun.FileSystem.Test
         {
             //  #   Arrange.
             var rootName = Logic.ElementNameRoot;
-            const string Path = @"c:\images";
+            var path = Path.DirectorySeparatorChar + "images";
             var files = new[]
             {
-                new { pathfile = @"c:\images\whatever.jpg", length = 4, lastAccessTime = DateTime.Parse("2010-01-05 11:22:33Z")  }
+                new { pathfile = Path.Combine(path, "whatever.jpg"), length = 4, lastAccessTime = DateTime.Parse("2010-01-05 11:22:33Z")  }
             };
 
             var mockedFileSystem = new MockFileSystem(
-                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length, pf.lastAccessTime))
+                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length, pf.lastAccessTime)), 
+                path
             );
 
-            var sut = LogicFactory.CreateForPath(mockedFileSystem, Path);
+            var sut = LogicFactory.CreateForPath(mockedFileSystem, path);
 
             //  #   Act.
             var res = sut.AsXDocument();
@@ -287,6 +290,6 @@ namespace LehmanLaidun.FileSystem.Test
             return DateTime.Parse(s, null, System.Globalization.DateTimeStyles.AdjustToUniversal);
         }
 
-    #endregion
-}
+        #endregion
+    }
 }
