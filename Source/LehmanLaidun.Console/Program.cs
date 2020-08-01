@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Xml.Linq;
 using LehmanLaidun.FileSystem;
 using C = System.Console;
 
@@ -22,24 +23,31 @@ namespace LehmanLaidun.Console
                 return (int)ReturnValues.NoInput;
             }
 
-            if( false == TryDirectoryExists(args[0],out string myFilesRoot))
+            if (false == TryDirectoryExists(args![0], out var myFilesRoot))
             {
                 return (int)ReturnValues.InvalidMyDirectory;
             }
 
-            if( false == TryDirectoryExists(args[1], out string theirFilesRoot))
+            if (args![1] == "-ox")
             {
-                return (int)ReturnValues.InvalidTheirsDirectory;
+                var files = LogicFactory.CreateForPath(new System.IO.Abstractions.FileSystem(), myFilesRoot).AsXDocument();
+                OutputResult(files);
             }
+            else {
+                if (false == TryDirectoryExists(args[1], out string theirFilesRoot))
+                {
+                    return (int)ReturnValues.InvalidTheirsDirectory;
+                }
 
-            var myFiles = LogicFactory.CreateForPath(new System.IO.Abstractions.FileSystem(), myFilesRoot).AsXDocument();
-            var theirFiles = LogicFactory.CreateForPath(new System.IO.Abstractions.FileSystem(), theirFilesRoot).AsXDocument();
+                var myFiles = LogicFactory.CreateForPath(new System.IO.Abstractions.FileSystem(), myFilesRoot).AsXDocument();
+                var theirFiles = LogicFactory.CreateForPath(new System.IO.Abstractions.FileSystem(), theirFilesRoot).AsXDocument();
 
-            var differences = Logic.CompareXml(myFiles, theirFiles, new[] { "name", "length" });
+                var differences = Logic.CompareXml(myFiles, theirFiles, new[] { "name", "length" });
 
-            //TODO:Make other output if differences.Result == true;
+                //TODO:Make other output if differences.Result == true;
 
-            OutputResult(differences);
+                OutputResult(differences);
+            }
 
             return (int)ReturnValues.Success;
         }
@@ -47,12 +55,23 @@ namespace LehmanLaidun.Console
         private static void OutputMessage()
         {
             C.WriteLine("* LehmanLaidun.Console *");
-            C.WriteLine("This program compares two directory trees and returns the differences.");
+            C.WriteLine();
+            C.WriteLine("This program can output a directory's tree as an xml file.");
+            C.WriteLine();
+            C.WriteLine("Example of usage:");
+            C.WriteLine(@"LehmanLaidun.Console.exe .\Data\ADrive\ -ox");
+            C.WriteLine();
+            C.WriteLine("This program can compare two directory trees and returns the differences.");
             C.WriteLine();
             C.WriteLine("Examples of usage:");
             C.WriteLine("dotnet LehmanLaidun.Console.dll \"C:\\MyMusic\" E:\\");
             C.WriteLine("Or:");
             C.WriteLine(@".\bin\Debug\netcoreapp3.1\LehmanLaidun.Console.exe .\Data\MyDrive\ .\Data\TheirDrive\");
+        }
+
+        private static void OutputResult( XDocument files)
+        {
+            C.WriteLine(files.ToString());
         }
 
         private static void OutputResult((bool Result, IEnumerable<Difference> Differences) diff)
@@ -70,7 +89,7 @@ namespace LehmanLaidun.Console
             }
         }
 
-        private static bool TryDirectoryExists(string possibleDirectory, out string validDirectory)
+        private static bool TryDirectoryExists(string possibleDirectory, out string? validDirectory)
         {
             if(System.IO.Directory.Exists(possibleDirectory))
             {

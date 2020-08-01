@@ -1,0 +1,12 @@
+﻿<ProjectConfiguration>
+  <Settings>
+    <IgnoredTests>
+      <NamedTestSelector>
+        <TestName>LehmanLaidun.Console.Test.ConsoleTest.CompareTwoFolders</TestName>
+      </NamedTestSelector>
+      <NamedTestSelector>
+        <TestName>LehmanLaidun.Console.Test.ConsoleTest.OutputOneFolderAsXml</TestName>
+      </NamedTestSelector>
+    </IgnoredTests>
+  </Settings>
+</ProjectConfiguration>
