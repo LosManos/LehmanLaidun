@@ -48,7 +48,7 @@ namespace LehmanLaidun.FileSystem.Test
             catch (FirstElementAndXpathDoNotMatchException exc)
             {
                 //  It should come here.
-                Assert.IsTrue(true, "It should throw and exception.");
+                Assert.IsTrue(true, "It should throw an exception.");
 
                 exc.RuleName.Should().Be("AnyRuleName");
                 exc.Element.Should().Be(firstElement.ToString());

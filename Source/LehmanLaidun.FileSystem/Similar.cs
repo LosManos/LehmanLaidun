@@ -56,28 +56,28 @@ namespace LehmanLaidun.FileSystem
         {
             var similar = obj as Similar;
             return similar != null &&
-                   EqualityComparer<string>.Default.Equals(FirstElement?.ToString(), similar.FirstElement?.ToString()) &&
+                   EqualityComparer<string?>.Default.Equals(FirstElement?.ToString(), similar.FirstElement?.ToString()) &&
                    FirstXpath == similar.FirstXpath &&
-                   EqualityComparer<string>.Default.Equals(SecondElement?.ToString(), similar.SecondElement?.ToString()) &&
+                   EqualityComparer<string?>.Default.Equals(SecondElement?.ToString(), similar.SecondElement?.ToString()) &&
                    SecondXpath == similar.SecondXpath;
         }
 
         public override int GetHashCode()
         {
             var hashCode = 801317247;
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(FirstElement?.ToString());
+            hashCode = hashCode * -1521134295 + EqualityComparer<string?>.Default.GetHashCode(FirstElement?.ToString());
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(FirstXpath);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(SecondElement?.ToString());
+            hashCode = hashCode * -1521134295 + EqualityComparer<string?>.Default.GetHashCode(SecondElement?.ToString());
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(SecondXpath);
             return hashCode;
         }
 
-        public static bool operator ==(Similar similar1, Similar similar2)
+        public static bool operator ==(Similar? similar1, Similar? similar2)
         {
-            return EqualityComparer<Similar>.Default.Equals(similar1, similar2);
+            return EqualityComparer<Similar?>.Default.Equals(similar1, similar2);
         }
 
-        public static bool operator !=(Similar similar1, Similar similar2)
+        public static bool operator !=(Similar? similar1, Similar? similar2)
         {
             return !(similar1 == similar2);
         }
