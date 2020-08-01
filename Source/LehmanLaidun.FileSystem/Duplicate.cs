@@ -29,14 +29,14 @@ namespace LehmanLaidun.FileSystem
         {
             var duplicate = obj as Duplicate;
             return duplicate != null &&
-                   EqualityComparer<string>.Default.Equals(Element?.ToString(), duplicate.Element?.ToString()) &&
+                   EqualityComparer<string?>.Default.Equals(Element?.ToString(), duplicate.Element?.ToString()) &&
                    XPaths.SequenceEqual(duplicate.XPaths);
         }
 
         public override int GetHashCode()
         {
             var hashCode = -2117100120;
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Element?.ToString());
+            hashCode = hashCode * -1521134295 + EqualityComparer<string?>.Default.GetHashCode(Element?.ToString());
             foreach( var xpath in XPaths)
             {
                 hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(xpath);
@@ -44,12 +44,12 @@ namespace LehmanLaidun.FileSystem
             return hashCode;
         }
 
-        public static bool operator ==(Duplicate duplicate1, Duplicate duplicate2)
+        public static bool operator ==(Duplicate? duplicate1, Duplicate? duplicate2)
         {
-            return EqualityComparer<Duplicate>.Default.Equals(duplicate1, duplicate2);
+            return EqualityComparer<Duplicate?>.Default.Equals(duplicate1, duplicate2);
         }
 
-        public static bool operator !=(Duplicate duplicate1, Duplicate duplicate2)
+        public static bool operator !=(Duplicate? duplicate1, Duplicate? duplicate2)
         {
             return !(duplicate1 == duplicate2);
         }

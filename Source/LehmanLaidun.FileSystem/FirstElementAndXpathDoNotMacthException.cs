@@ -5,16 +5,15 @@ namespace LehmanLaidun.FileSystem
     [Serializable]
     public class ElementAndXpathDoNotMatchException : Exception
     {
-        public string RuleName { get; }
-        public string Element { get; }
-        public string Xpath { get; }
+        public string RuleName { get; } = "";
+        public string Element { get; } = "";
+        public string Xpath { get; } = "";
 
         public ElementAndXpathDoNotMatchException(
             string ruleName,
-            string element, 
+            string element,
             string xpath)
-            :base($"Element {element} does not match last element in xpath {xpath} for rule {ruleName}.")
-        {
+            : base($"Element {element} does not match last element in xpath {xpath} for rule {ruleName}.") {
             RuleName = ruleName;
             Element = element;
             Xpath = xpath;

@@ -61,12 +61,12 @@ namespace LehmanLaidun.FileSystem
             return hashCode;
         }
 
-        public static bool operator ==(FileItem item1, FileItem item2)
+        public static bool operator ==(FileItem? item1, FileItem? item2)
         {
-            return EqualityComparer<FileItem>.Default.Equals(item1, item2);
+            return EqualityComparer<FileItem?>.Default.Equals(item1, item2);
         }
 
-        public static bool operator !=(FileItem item1, FileItem item2)
+        public static bool operator !=(FileItem? item1, FileItem? item2)
         {
             return !(item1 == item2);
         }

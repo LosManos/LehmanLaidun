@@ -28,12 +28,12 @@ namespace LehmanLaidun.FileSystem
             return 539060726 + EqualityComparer<string>.Default.GetHashCode(Name);
         }
 
-        public static bool operator ==(DirectoryItem item1, DirectoryItem item2)
+        public static bool operator ==(DirectoryItem? item1, DirectoryItem? item2)
         {
-            return EqualityComparer<DirectoryItem>.Default.Equals(item1, item2);
+            return EqualityComparer<DirectoryItem?>.Default.Equals(item1, item2);
         }
 
-        public static bool operator !=(DirectoryItem item1, DirectoryItem item2)
+        public static bool operator !=(DirectoryItem? item1, DirectoryItem? item2)
         {
             return !(item1 == item2);
         }

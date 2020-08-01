@@ -9,6 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LehmanLaidun.FileSystem.Tes
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{076B34C5-5FDB-4F7F-A59E-CF17449A2C7C}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		LICENSE = LICENSE
 		LICENSE.AGPL.txt = LICENSE.AGPL.txt
 		Readme.md = Readme.md
@@ -18,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LehmanLaidun.Console", "Sou
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LehmanLaidun.FileSystem", "Source\LehmanLaidun.FileSystem\LehmanLaidun.FileSystem.csproj", "{A06FD4A0-C80E-4EB4-8F84-20FD5EF9154F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LehmanLaidun.Console.Test", "Source\Tests\LehmanLaidun.Console.Test\LehmanLaidun.Console.Test.csproj", "{DD74581C-D96A-41B8-A812-C5069E23DD96}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LehmanLaidun.Console.Test", "Source\Tests\LehmanLaidun.Console.Test\LehmanLaidun.Console.Test.csproj", "{DD74581C-D96A-41B8-A812-C5069E23DD96}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

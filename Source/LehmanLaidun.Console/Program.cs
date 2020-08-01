@@ -30,17 +30,17 @@ namespace LehmanLaidun.Console
 
             if (args![1] == "-ox")
             {
-                var files = LogicFactory.CreateForPath(new System.IO.Abstractions.FileSystem(), myFilesRoot).AsXDocument();
+                var files = LogicFactory.CreateForPath(new System.IO.Abstractions.FileSystem(), myFilesRoot!).AsXDocument();
                 OutputResult(files);
             }
             else {
-                if (false == TryDirectoryExists(args[1], out string theirFilesRoot))
+                if (false == TryDirectoryExists(args[1], out string? theirFilesRoot))
                 {
                     return (int)ReturnValues.InvalidTheirsDirectory;
                 }
 
-                var myFiles = LogicFactory.CreateForPath(new System.IO.Abstractions.FileSystem(), myFilesRoot).AsXDocument();
-                var theirFiles = LogicFactory.CreateForPath(new System.IO.Abstractions.FileSystem(), theirFilesRoot).AsXDocument();
+                var myFiles = LogicFactory.CreateForPath(new System.IO.Abstractions.FileSystem(), myFilesRoot!).AsXDocument();
+                var theirFiles = LogicFactory.CreateForPath(new System.IO.Abstractions.FileSystem(), theirFilesRoot!).AsXDocument();
 
                 var differences = Logic.CompareXml(myFiles, theirFiles, new[] { "name", "length" });
 

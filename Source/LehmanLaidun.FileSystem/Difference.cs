@@ -11,10 +11,10 @@ namespace LehmanLaidun.FileSystem
             Second
         }
 
-        public XElement FirstElement { get; private set; }
-        public string FirstXPath { get; }
-        public XElement SecondElement { get; private set; }
-        public string SecondXPath { get; }
+        public XElement? FirstElement { get; private set; }
+        public string? FirstXPath { get; }
+        public XElement? SecondElement { get; private set; }
+        public string? SecondXPath { get; }
 
         internal static Difference Create(XElement element, string xpath, FoundOnlyIn foundOnlyIn)
         {
@@ -28,7 +28,7 @@ namespace LehmanLaidun.FileSystem
             }
         }
 
-        private Difference(XElement firstElement, string firstXPath, XElement secondElement, string secondXPath)
+        private Difference(XElement? firstElement, string? firstXPath, XElement? secondElement, string? secondXPath)
         {
             FirstElement = firstElement;
             FirstXPath = firstXPath;
