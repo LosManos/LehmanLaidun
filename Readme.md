@@ -22,13 +22,19 @@ Or at your company - everyone dumps everything everywhere and what is really the
 
 ## Road map
 
-A GUI or console. Point it at two folders. Get a report showing differences.
+* A GUI or console. Point it at two folders. Get a report showing differences.
+=> Console done.
 
-A GUI or console. Point it at a folder. Get a report of duplicates and possible duplicates.  
+* A GUI or console. Point it at a folder. Get a report of duplicates and possible duplicates.  
 It says "possible" duplicates since two files with the exact same content but different names might be or not be the same file. If it is vacation pictures it is probably the same file, unless one is a copy in the folder "Send to print shop".
+=> Console done.
 
-Then we can add functionality for easing the diffing; like an image viewer to quickly choose the one to keep.
+We can add functionality for easing the diffing; like an image viewer to quickly choose the one to keep.
 Configurability for, for example, if a file with the same content but different file name is different or not.
+
+We can make everything powershell compatible. Then lots of looping and filtering goes out of this project.
+
+We can add a plugin system so we can diff images, sound, film, whatnot; anything with meta data.
 
 ## Example of usage through code
 
