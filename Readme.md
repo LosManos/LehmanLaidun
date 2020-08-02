@@ -1,6 +1,6 @@
 # Readme for LehmanLaidun
 
-License is AGPL+NoEvil.
+License is [AGPL+NoEvil](https://raw.githubusercontent.com/LosManos/LehmanLaidun/master/LICENSE)
 
 State of project is Alpha.
 
