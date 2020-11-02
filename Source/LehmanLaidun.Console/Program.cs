@@ -1,5 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+// Note: We should *not* use System.IO but instead System.IO.Abstractions;
+//using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Xml.Linq;
+using CommandLine;
 using LehmanLaidun.FileSystem;
 using C = System.Console;
 
@@ -13,34 +19,87 @@ namespace LehmanLaidun.Console
         InvalidTheirsDirectory = 3
     }
 
+    class Options
+    {
+        [Option("mypath", Required = true, HelpText = "A path to compare with another.")]
+        public string MyPath { get; set; } = "";
+
+        [Option("theirpath", HelpText = "Another path to compare.")]
+        public string TheirPath { get; set; } = "";
+
+        [Option("ox", HelpText = "Use to Output in Xml format.")]
+        public bool OutputXml { get; set; }
+
+        [Option("pluginpath", HelpText = "Path of plugins")]
+        public string PluginPath { get; set; } = "";
+
+        [Option("verbose")]
+        public bool Verbose { get; set; }
+    }
+
     class Program
     {
+        static System.IO.Abstractions.FileSystem fileSystem = new System.IO.Abstractions.FileSystem();
+
         static int Main(string[] args)
         {
-            if((args??new string[0]).Length != 2)
+            Options options = new Options();
+            Parser.Default.ParseArguments<Options>(args)
+                .WithParsed(o => options = o);
+
+            Func<string> executingFolder = () => fileSystem.Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase!).LocalPath)!;
+            Func<string, string> rootedPath = (string path) => fileSystem.Path.GetFullPath(path)!;
+            Func<string, string[]> pluginFolders = (string pluginPath) => fileSystem.Directory.GetDirectories(pluginPath);
+
+            if (options.Verbose)
             {
-                OutputMessage();
-                return (int)ReturnValues.NoInput;
+                OutputOptions(options);
+                Output(
+                        ("PluginFolders", () => string.Join(',', pluginFolders(options.PluginPath)))
+                );
             }
 
-            if (false == TryDirectoryExists(args![0], out var myFilesRoot))
+            if (false == TryDirectoryExists(options.MyPath, out var myFilesRoot))
             {
                 return (int)ReturnValues.InvalidMyDirectory;
             }
 
-            if (args![1] == "-ox")
+            var pluginHandler = PluginHandler.Create();
+
+            //  Below here we are allowed to touch the file system.
+
+            if(options.Verbose)
             {
-                var files = LogicFactory.CreateForPath(new System.IO.Abstractions.FileSystem(), myFilesRoot!).AsXDocument();
+                Output("ExecutingFolder", executingFolder);
+            }
+
+            if (options.PluginPath != "")
+            {
+                var pluginPaths = pluginFolders(options.PluginPath).Select(p => fileSystem.Path.Combine(rootedPath(p), fileSystem.DirectoryInfo.FromDirectoryName(p).Name + ".dll"));
+                Output("Plugins paths", () => pluginPaths);
+
+                var assemblies = pluginPaths.Select(p => Assembly.LoadFile(p));
+
+                pluginHandler.Load(assemblies);
+            }
+
+            if (options.TheirPath == "")
+            {
+                var files = LogicFactory.CreateForPath(
+                    fileSystem,
+                    myFilesRoot!,
+                    pluginHandler).AsXDocument();
                 OutputResult(files);
             }
-            else {
-                if (false == TryDirectoryExists(args[1], out string? theirFilesRoot))
+            else
+            {
+                if (false == TryDirectoryExists(options.TheirPath, out string? theirFilesRoot))
                 {
                     return (int)ReturnValues.InvalidTheirsDirectory;
                 }
 
-                var myFiles = LogicFactory.CreateForPath(new System.IO.Abstractions.FileSystem(), myFilesRoot!).AsXDocument();
-                var theirFiles = LogicFactory.CreateForPath(new System.IO.Abstractions.FileSystem(), theirFilesRoot!).AsXDocument();
+                var myFiles = LogicFactory.CreateForPath(new System.IO.Abstractions.FileSystem(), myFilesRoot!, pluginHandler).AsXDocument();
+                var theirFiles = LogicFactory.CreateForPath(new System.IO.Abstractions.FileSystem(), theirFilesRoot!, pluginHandler).AsXDocument();
 
                 var differences = Logic.CompareXml(myFiles, theirFiles, new[] { "name", "length" });
 
@@ -52,37 +111,46 @@ namespace LehmanLaidun.Console
             return (int)ReturnValues.Success;
         }
 
-        private static void OutputMessage()
+        private static void OutputOptions(Options options)
         {
-            C.WriteLine("* LehmanLaidun.Console *");
-            C.WriteLine();
-            C.WriteLine("This program can output a directory's tree as an xml file.");
-            C.WriteLine();
-            C.WriteLine("Example of usage:");
-            C.WriteLine(@"LehmanLaidun.Console.exe .\Data\ADrive\ -ox");
-            C.WriteLine();
-            C.WriteLine("This program can compare two directory trees and returns the differences.");
-            C.WriteLine();
-            C.WriteLine("Examples of usage:");
-            C.WriteLine("dotnet LehmanLaidun.Console.dll \"C:\\MyMusic\" E:\\");
-            C.WriteLine("Or:");
-            C.WriteLine(@".\bin\Debug\netcoreapp3.1\LehmanLaidun.Console.exe .\Data\MyDrive\ .\Data\TheirDrive\");
+            C.WriteLine("Options:");
+            C.WriteLine($"Path1:{options.MyPath}.");
+            C.WriteLine($"Path2:{options.TheirPath}.");
+            C.WriteLine($"OutputXml:{ options.OutputXml}.");
         }
 
-        private static void OutputResult( XDocument files)
+        private static void Output(params (string key, Func<string> valueFunc)[] kvps)
+        {
+            foreach (var kvp in kvps)
+            {
+                Output(kvp.key, kvp.valueFunc);
+            }
+        }
+
+        private static void Output(string key, Func<IEnumerable<string>> valueFunc)
+        {
+            Output(key, () => string.Join(',', valueFunc()));
+        }
+
+        private static void Output(string key, Func<string> valueFunc)
+        {
+            C.WriteLine($"{key}:{valueFunc()}");
+        }
+
+        private static void OutputResult(XDocument files)
         {
             C.WriteLine(files.ToString());
         }
 
         private static void OutputResult((bool Result, IEnumerable<Difference> Differences) diff)
         {
-            foreach ( var d in diff.Differences)
+            foreach (var d in diff.Differences)
             {
-                if( d.FirstXPath != null)
+                if (d.FirstXPath != null)
                 {
                     C.WriteLine($"Found only in first:{d.FirstXPath}.");
                 }
-                if( d.SecondXPath != null)
+                if (d.SecondXPath != null)
                 {
                     C.WriteLine($"Found only in second:{d.SecondXPath}.");
                 }
@@ -91,7 +159,7 @@ namespace LehmanLaidun.Console
 
         private static bool TryDirectoryExists(string possibleDirectory, out string? validDirectory)
         {
-            if(System.IO.Directory.Exists(possibleDirectory))
+            if (System.IO.Directory.Exists(possibleDirectory))
             {
                 validDirectory = possibleDirectory;
                 return true;

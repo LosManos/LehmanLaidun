@@ -1,10 +1,9 @@
-﻿using Microsoft.VisualStudio.TestPlatform.Utilities;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace LehmanLaidun.Console.Test
+namespace LehmanLaidun.Console.Integration.Test
 {
     /// <summary>This class contains functionality for handling the "physical" file system when testing.
     /// </summary>

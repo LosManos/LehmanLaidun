@@ -48,7 +48,6 @@ namespace LehmanLaidun.FileSystem.Test
             DuplicateTestDataClass.ElementAndXPaths[] expecteds,
             string message)
         {
-            //  #   Arrange.
             var doc = XDocument.Parse(xmlString);
 
             //  #   Act.
@@ -83,7 +82,6 @@ namespace LehmanLaidun.FileSystem.Test
         [TestMethod]
         public void CanReturnListWithAllPropertiesSet()
         {
-            //  #   Arrange.
             var path = Path.DirectorySeparatorChar + @"images";
             var files = new[] {
                 new { pathfile = Path.Combine(path,"20180924","image1.jpg"), length = 3, lastAccessTime = DateTime.Parse("2010-01-04 11:22:33Z") },
@@ -96,15 +94,18 @@ namespace LehmanLaidun.FileSystem.Test
                 path
             );
 
-           var sut = LogicFactory.CreateForPath(mockedFileSystem, path);
+            var pluginHandler = PluginHandler.Create();
+
+           var sut = LogicFactory.CreateForPath(mockedFileSystem, path, pluginHandler);
 
             //  #   Act.
             var res = sut.AsEnumerableFiles();
 
             //  #   Assert.
-            res.Should().BeEquivalentTo(
-                files.Select(f => CreateFileItem(f.pathfile, f.length, f.lastAccessTime)
-)            );
+            res.Select(f => (f.Name, f.Path)).Should().BeEquivalentTo(
+                files.Select(f => CreateFileItem(f.pathfile, f.length, f.lastAccessTime, pluginHandler))            
+                    .Select(f=> (f.Name, f.Path))
+                );
         }
 
         [TestMethod]
@@ -122,7 +123,9 @@ namespace LehmanLaidun.FileSystem.Test
                 path
             );
 
-            var sut = LogicFactory.CreateForPath(mockedFileSystem, path);
+            var pluginHandler = PluginHandler.Create();
+
+            var sut = LogicFactory.CreateForPath(mockedFileSystem, path, pluginHandler);
 
             //  #   Act.
             var res = sut.AsXDocument();
@@ -132,7 +135,7 @@ namespace LehmanLaidun.FileSystem.Test
                 XDocument.Parse(@$"
 <root path='{path}'>
     <directory name='Vacation'>
-        <file name='20180606-100404.jpg' length='15' lastWriteTime='2010-01-16T11:16:33.0000000Z'/>
+        <file name='20180606-100404.jpg'/>
     </directory>
 </root>
 "));
@@ -143,7 +146,7 @@ namespace LehmanLaidun.FileSystem.Test
         /// Feel free to rewrite to (a) cleaner test(s).
         /// </summary>
         [TestMethod]
-        public void CanReturnXml()
+        public void CanReturnXmlWihtBasicData()
         {
             var path = Path.DirectorySeparatorChar +  "images";
             var files = new[]
@@ -160,7 +163,9 @@ namespace LehmanLaidun.FileSystem.Test
                 path
             );
 
-            var sut = LogicFactory.CreateForPath(mockedFileSystem, path);
+            var pluginHandler = PluginHandler.Create();
+
+            var sut = LogicFactory.CreateForPath(mockedFileSystem, path, pluginHandler);
 
             //  #   Act.
             var res = sut.AsXDocument();
@@ -170,19 +175,19 @@ namespace LehmanLaidun.FileSystem.Test
                 XDocument.Parse(@$"
 <root path='{path}'>
     <directory name=''>
-        <file name='stray image.jpg' length='4' lastWriteTime='2010-01-05T11:05:34.0000000Z'/>
+        <file name='stray image.jpg'/>
     </directory>
     <directory name='Vacation'>
-        <file name='20180606-100404.jpg' length='15' lastWriteTime='2010-01-16T11:16:33.0000000Z'/>
+        <file name='20180606-100404.jpg'/>
     </directory>
     <directory name='2018'>
         <directory name='201809'>
-            <file name='20180925-220604.jpg' length='2' lastWriteTime='2010-01-03T11:03:33.0000000Z'/>
-            <file name='20180925-220502.jpg' length='4' lastWriteTime='2010-01-05T11:05:33.0000000Z'/>
+            <file name='20180925-220604.jpg'/>
+            <file name='20180925-220502.jpg'/>
         </directory>
     </directory>
     <directory name='iphone backup'>
-        <file name='20180925-2207.jpg' length='3' lastWriteTime='2010-01-04T11:04:33.0000000Z'/>
+        <file name='20180925-2207.jpg'/>
     </directory>
 </root>
 "));
@@ -202,7 +207,6 @@ namespace LehmanLaidun.FileSystem.Test
         [TestMethod]
         public void RootNameIsKnown()
         {
-            //  #   Arrange.
             var rootName = Logic.ElementNameRoot;
             var path = Path.DirectorySeparatorChar + "images";
             var files = new[]
@@ -215,7 +219,9 @@ namespace LehmanLaidun.FileSystem.Test
                 path
             );
 
-            var sut = LogicFactory.CreateForPath(mockedFileSystem, path);
+            var pluginHandler = PluginHandler.Create();
+
+            var sut = LogicFactory.CreateForPath(mockedFileSystem, path, pluginHandler);
 
             //  #   Act.
             var res = sut.AsXDocument();
@@ -264,11 +270,11 @@ namespace LehmanLaidun.FileSystem.Test
             }
         }
 
-        private static FileItem CreateFileItem(string pathfile, int length /*Should really be a long.*/, DateTime lastWriteTime)
+        private static FileItem CreateFileItem(string pathfile, int length /*Should really be a long.*/, DateTime lastWriteTime, IPluginHandler pluginHandler)
         {
             var fs = new MockFileSystem();
             fs.AddFile(pathfile, CreateMockFileData(length, lastWriteTime));
-            return FileItem.Create(fs, pathfile);
+            return FileItem.Create(fs, pathfile, pluginHandler);
         }
 
         private static MockFileData CreateMockFileData(

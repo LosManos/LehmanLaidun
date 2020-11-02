@@ -1,44 +1,48 @@
-﻿using System;
+﻿using LehmanLaidun.Plugin;
 using System.Collections.Generic;
 using System.IO.Abstractions;
+using System.Linq;
 
 namespace LehmanLaidun.FileSystem
 {
     public class FileItem : FileSystemItem
     {
-        public DateTime LastWriteTime { get; }
-        public long Length { get; }
         public string Name { get; }
         public string Path { get; }
+        public IEnumerable<ParseResult> Data { get; private set; }
 
-        private FileItem(string path, string name, long length, DateTime lastWriteTime)
+        private FileItem(string path, string name, IEnumerable<ParseResult> parseResults) //, long length, DateTime lastWriteTime)
         {
             Path = path;
             Name = name;
-            Length = length;
-            LastWriteTime = lastWriteTime;
+            Data = parseResults;
         }
 
         internal static FileItem Create(
             IFileSystem fileSystem, 
-            string pathFile)
+            string pathFile, 
+            IPluginHandler pluginHandler)
         {
             // There is a problem with `GetDirectoryName` as it cuts the drive name if there is no directory or file.
             // That should not be a problem here though as we always get a file.
             // https://docs.microsoft.com/en-us/dotnet/api/system.io.path.getdirectoryname
+            // TODO:Can/should we change to Abstraction.
             string path = System.IO.Path.GetDirectoryName(pathFile);
 
+            // TODO:Can/should we change to Abstraction.
             string filename = System.IO.Path.GetFileName(pathFile);
 
-            // We cannot use new FileInfo(...).Length as it throws an exception.
-            // See here: https://stackoverflow.com/questions/44029830/how-do-i-mock-the-fileinfo-information-for-a-file
-            long length = fileSystem.FileInfo.FromFileName(pathFile).Length;
+            //// We cannot use new FileInfo(...).Length as it throws an exception.
+            //// See here: https://stackoverflow.com/questions/44029830/how-do-i-mock-the-fileinfo-information-for-a-file
+            //long length = fileSystem.FileInfo.FromFileName(pathFile).Length;
 
-            // GetLastWriteTime always returns the value as local kind
-            // so we change it to UTC to alway have... UTC.
-            var lastWriteTime = fileSystem.File.GetLastWriteTime(pathFile).ToUniversalTime();
+            //// GetLastWriteTime always returns the value as local kind
+            //// so we change it to UTC to alway have... UTC.
+            //var lastWriteTime = fileSystem.File.GetLastWriteTime(pathFile).ToUniversalTime();
 
-            return new FileItem(path, filename, length, lastWriteTime);
+            var results = pluginHandler.Execute(pathFile);
+
+            return new FileItem(path, filename, results); //, length, lastWriteTime);
         }
 
         public override bool Equals(object obj)
@@ -47,8 +51,7 @@ namespace LehmanLaidun.FileSystem
             return item != null &&
                    Path == item.Path &&
                    Name == item.Name &&
-                   Length == item.Length &&
-                   LastWriteTime == item.LastWriteTime;
+                   Enumerable.SequenceEqual(Data, item.Data);
         }
 
         public override int GetHashCode()
@@ -56,8 +59,13 @@ namespace LehmanLaidun.FileSystem
             var hashCode = -1534044191;
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Path);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Name);
-            hashCode = hashCode * -1521134295 + Length.GetHashCode();
-            hashCode = hashCode * -1521134295 + LastWriteTime.GetHashCode();
+            if( Data != null)
+            {
+                foreach( var datum in Data)
+                {
+                    hashCode = hashCode * -1521134295 + EqualityComparer<ParseResult>.Default.GetHashCode(datum);
+                }
+            }
             return hashCode;
         }
 

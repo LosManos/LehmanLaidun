@@ -16,4 +16,4 @@ jobs:
     - name: Build with dotnet
       run: dotnet build --configuration Release
     - name: Test with dotnet
-      run: dotnet test ./LehmanLaidun.sln --configuration Release
+      run: dotnet test ./LehmanLaidun.sln --configuration Release --filter TestCategory!=LocalOnly
