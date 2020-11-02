@@ -8,6 +8,11 @@
 
   <ItemGroup>
     <PackageReference Include="System.IO.Abstractions" Version="11.0.6" />
+    <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LehmanLaidun.Plugin\LehmanLaidun.Plugin.csproj" />
   </ItemGroup>
 
 </Project>

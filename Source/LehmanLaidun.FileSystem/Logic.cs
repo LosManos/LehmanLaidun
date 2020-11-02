@@ -40,6 +40,8 @@ namespace LehmanLaidun.FileSystem
 
         private readonly IFileSystem _fileSystem;
 
+        private readonly IPluginHandler _pluginHandler;
+
         public string Path { get; }
 
         public class Rule
@@ -73,19 +75,22 @@ namespace LehmanLaidun.FileSystem
         /// </summary>
         /// <param name="fileSystem"></param>
         /// <param name="path"></param>
+        /// <param name="pluginHandler"></param>
         /// <returns></returns>
-        internal static Logic Create(IFileSystem fileSystem, string path)
+        internal static Logic Create(IFileSystem fileSystem, string path, IPluginHandler pluginHandler)
         {
-            return new Logic(fileSystem, path);
+            return new Logic(fileSystem, path, pluginHandler);
         }
 
         /// <summary>This constructor takes all parameters needed to fully populate the object.
         /// </summary>
         /// <param name="fileSystem"></param>
         /// <param name="path"></param>
-        private Logic(IFileSystem fileSystem, string path)
+        /// <param name="pluginHandler"></param>
+        private Logic(IFileSystem fileSystem, string path, IPluginHandler pluginHandler)
         {
             _fileSystem = fileSystem;
+            _pluginHandler = pluginHandler;
             Path = path;
         }
 
@@ -100,7 +105,7 @@ namespace LehmanLaidun.FileSystem
             foreach (var pathfile
                 in _fileSystem.Directory.EnumerateFiles(Path, "*", System.IO.SearchOption.TopDirectoryOnly))
             {
-                yield return FileItem.Create(_fileSystem, pathfile);
+                yield return FileItem.Create(_fileSystem, pathfile, _pluginHandler);
             }
 
             //  Then recurse the directories.
@@ -110,7 +115,7 @@ namespace LehmanLaidun.FileSystem
                 foreach (var pathfile
                     in _fileSystem.Directory.EnumerateFiles(directory, "*", System.IO.SearchOption.TopDirectoryOnly))
                 {
-                    yield return FileItem.Create(_fileSystem, pathfile);
+                    yield return FileItem.Create(_fileSystem, pathfile, _pluginHandler);
                 }
             }
         }
@@ -121,10 +126,10 @@ namespace LehmanLaidun.FileSystem
         public XDocument AsXDocument()
         {
             var doc = new XDocument(new XElement(ElementNameRoot, new XAttribute(AttributeNamePath, Path)));
-            foreach (var file in AsEnumerableFiles())
+            foreach (var fileItem in AsEnumerableFiles())
             {
                 //  Remove the first part, the Path.
-                var relPath = file.Path.Remove(0, Path.Length);
+                var relPath = fileItem.Path.Remove(0, Path.Length);
                 //  Split the path to a list of directory names.
                 var directoryNames = relPath.Trim(new[] { _fileSystem.Path.DirectorySeparatorChar }).Split(_fileSystem.Path.DirectorySeparatorChar);
                 var directoryElement = doc.Root;
@@ -134,7 +139,7 @@ namespace LehmanLaidun.FileSystem
                     //  Select the element for the last directory; or create it and select it.
                     directoryElement = doc.SelectDirectoryElement(directoryNameList) ?? directoryElement.AddDirectoryElement(directoryNameList.Last());
                 }
-                directoryElement.AddFileElement(file);
+                directoryElement.AddFileElement(fileItem);
             }
             return doc;
         }
@@ -238,22 +243,6 @@ namespace LehmanLaidun.FileSystem
                 diffs.AddRange(Compare(child, secondElement, comparedAttributeKeys, foundOnlyIn));
             }
             return diffs;
-        }
-
-        private static bool ElementsAreEqual(XElement element1, XElement element2)
-        {
-            return ElementNamesAreEqual(element1, element2) &&
-                ElementAttributesAreEqual(element1, element2);
-        }
-
-        private static bool ElementAttributesAreEqual(XElement element1, XElement element2)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static bool ElementNamesAreEqual(XElement element1, XElement element2)
-        {
-            return element1.Name == element2.Name;
         }
 
         /// <summary>This method returns the element and everyting below as a list of elements.

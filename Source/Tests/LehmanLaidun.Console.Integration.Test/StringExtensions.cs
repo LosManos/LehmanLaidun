@@ -1,4 +1,4 @@
-﻿namespace LehmanLaidun.Console.Test
+﻿namespace LehmanLaidun.Console.Integration.Test
 {
     internal static class StringExtensions
     {

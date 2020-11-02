@@ -42,16 +42,27 @@ namespace LehmanLaidun.FileSystem
         /// <summary>This method creates an element out of the FileItem provided and adds it to the element provided.
         /// </summary>
         /// <param name="element"></param>
-        /// <param name="file"></param>
+        /// <param name="fileItem"></param>
         /// <returns></returns>
-        internal static XElement AddFileElement(this XElement element, FileItem file)
+        internal static XElement AddFileElement(this XElement element, FileItem fileItem)
         {
             var newElement = new XElement(
                 Logic.ElementNameFile,
-                new XAttribute(Logic.AttributeNameName, file.Name),
-                new XAttribute(Logic.AttributeNameLength, file.Length), 
-                new XAttribute(Logic.AttributeNameLastWriteTime, file.LastWriteTime.ToString("o"))
+                new XAttribute(Logic.AttributeNameName, fileItem.Name)
             );
+            if (fileItem.Data.Any())
+            {
+                var dataElement = new XElement("data");
+                foreach (var parseResult in fileItem.Data)
+                {
+                    var datumElement = dataElement.AddElement(
+                        new XElement("datum",
+                        new XAttribute("plugin", parseResult.Name)
+                        ));
+                    datumElement.Add(parseResult.Result.Root);
+                }
+                newElement.AddElement(dataElement);
+            }
             element.AddElement(newElement);
             return newElement;
         }

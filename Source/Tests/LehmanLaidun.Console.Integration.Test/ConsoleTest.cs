@@ -2,10 +2,11 @@ using FluentAssertions;
 using LehmanLaidun.FileSystem;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
 
-namespace LehmanLaidun.Console.Test
+namespace LehmanLaidun.Console.Integration.Test
 {
     [TestClass]
     public class ConsoleTest
@@ -14,21 +15,22 @@ namespace LehmanLaidun.Console.Test
         public void CompareTwoFolders()
         {
             var expectedOutput =
-@"Found only in first:/root/directory[@name='Summer 2018']/file[@name='cat.jpg' and @length='9452'].
-Found only in first:/root/directory[@name='Summer 2018']/file[@name='museum.jpg' and @length='6618'].
-Found only in second:/root/directory[@name='Summer 2018']/file[@name='Birds at pier.jfif' and @length='5327'].
-".NormaliseLineEndings();
+@"Found only in first:/root/directory[@name='Summer 2018']/file[@name='cat.jpg'].
+Found only in first:/root/directory[@name='Summer 2018']/file[@name='museum.jpg'].
+Found only in second:/root/directory[@name='Summer 2018']/file[@name='Birds at pier.jfif'].
+".NormaliseLineEndings().Split("\r\n");
 
-            var arguments = Path.Combine(TheFileSystem.FindDataPath(), MethodBase.GetCurrentMethod()!.Name, "MyDrive") + 
+            var arguments = 
+                "--mypath=" + Path.Combine(TheFileSystem.FindDataPath(), MethodBase.GetCurrentMethod()!.Name, "MyDrive") + 
                 " " + 
-                Path.Combine(TheFileSystem.FindDataPath(), MethodBase.GetCurrentMethod()!.Name, "TheirDrive");
+                "--theirpath=" + Path.Combine(TheFileSystem.FindDataPath(), MethodBase.GetCurrentMethod()!.Name, "TheirDrive");
 
             //  Act.
             var output = TheFileSystem.Execute(arguments);
 
             //  Assert.
-            output.NormaliseLineEndings()
-                .Should().Be(expectedOutput);
+            output.NormaliseLineEndings().Split("\r\n").OrderBy(s=>s)
+                .Should().BeEquivalentTo(expectedOutput, options=> options.WithoutStrictOrdering());
         }
 
         [TestMethod]
@@ -39,15 +41,16 @@ Found only in second:/root/directory[@name='Summer 2018']/file[@name='Birds at p
             var expectedOutput =
                 @"<root >
                   <directory name=""Summer 2018"">
-                    <file name=""Birds at pier.jfif"" length=""5327"" />
-                    <file name=""field.jpg"" length=""6522"" />
-                    <file name=""swans.jpg"" length=""8140"" />
+                    <file name=""Birds at pier.jfif"" />
+                    <file name=""field.jpg"" />
+                    <file name=""swans.jpg"" />
                   </directory>
                 </root>";
 
-            var arguments = Path.Combine(TheFileSystem.FindDataPath(), MethodBase.GetCurrentMethod()!.Name, "ADrive") + 
+            var arguments = 
+                "--mypath=" + Path.Combine(TheFileSystem.FindDataPath(), MethodBase.GetCurrentMethod()!.Name, "ADrive") + 
                 " " + 
-                "-ox";
+                "--ox";
 
             //  Act.
             var output = TheFileSystem.Execute(arguments);

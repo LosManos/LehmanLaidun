@@ -2,10 +2,10 @@
   <Settings>
     <IgnoredTests>
       <NamedTestSelector>
-        <TestName>LehmanLaidun.Console.Test.ConsoleTest.CompareTwoFolders</TestName>
+        <TestName>LehmanLaidun.Console.Integration.Test.ConsoleTest.CompareTwoFolders</TestName>
       </NamedTestSelector>
       <NamedTestSelector>
-        <TestName>LehmanLaidun.Console.Test.ConsoleTest.OutputOneFolderAsXml</TestName>
+        <TestName>LehmanLaidun.Console.Integration.Test.ConsoleTest.OutputOneFolderAsXml</TestName>
       </NamedTestSelector>
     </IgnoredTests>
   </Settings>
