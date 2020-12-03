@@ -26,7 +26,7 @@ namespace LehmanLaidun.FileSystem.Integration.Test
         {
             var plugins = new[] {
                 new {Name = "PluginOne", Framework = "netstandard2.0" },
-                new{Name = "PluginTwo", Framework = "netcoreapp3.1"},
+                new{Name = "PluginTwo", Framework = "net5.0"},
             };
             var pluginPathFiles = plugins.Select(plugin =>
                 pathWrapper.Combine(

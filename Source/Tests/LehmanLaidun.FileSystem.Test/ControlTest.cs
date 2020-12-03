@@ -57,7 +57,7 @@ namespace LehmanLaidun.FileSystem.Test
             var expectedDuplicates = expecteds
                 .Select(expected =>
                 {
-                    var element = XDocument.Parse(expected.ElementString).Root;
+                    var element = XDocument.Parse(expected.ElementString).Root!;
                     return Duplicate.Create(element, expected.Xpaths);
                 });
 

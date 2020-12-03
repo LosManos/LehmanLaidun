@@ -44,7 +44,7 @@ namespace LehmanLaidun.Console.Integration.Test
             return exeDirectory;
         }
 
-        /// <summary>This method returns the binary path, the one edning with "netcoreapp...".
+        /// <summary>This method returns the binary path, the one ending with "net5.0".
         /// This method will return the wrong result when the dotnet version is updated.
         /// </summary>
         /// <returns></returns>
@@ -56,7 +56,7 @@ namespace LehmanLaidun.Console.Integration.Test
 #if RELEASE
             var releaseDebugFolder = "Release";
 #endif
-            var exeDirectory = Path.Combine(FindTesteePrjPath(), "bin", releaseDebugFolder, "netcoreapp3.1");
+            var exeDirectory = Path.Combine(FindTesteePrjPath(), "bin", releaseDebugFolder, "net5.0");
             return exeDirectory;
         }
 
