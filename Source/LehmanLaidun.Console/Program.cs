@@ -30,8 +30,11 @@ namespace LehmanLaidun.Console
         [Option("ox", HelpText = "Use to Output in Xml format.")]
         public bool OutputXml { get; set; }
 
-        [Option("pluginpath", HelpText = "Path of plugins")]
+        [Option("pluginpath", HelpText = "Path of plugins. It looks for /PluginName/PluginName.dll")]
         public string PluginPath { get; set; } = "";
+
+        [Option("pluginfiles", HelpText = "List of plugin dlls. Separated by space.")]
+        public string PluginFiles { get; set; } = "";
 
         [Option("verbose")]
         public bool Verbose { get; set; }
@@ -73,12 +76,23 @@ namespace LehmanLaidun.Console
                 Output("ExecutingFolder", executingFolder);
             }
 
-            if (options.PluginPath != "")
+            if (options.PluginPath != string.Empty)
             {
                 var pluginPaths = pluginFolders(options.PluginPath).Select(p => fileSystem.Path.Combine(rootedPath(p), fileSystem.DirectoryInfo.FromDirectoryName(p).Name + ".dll"));
                 Output("Plugins paths", () => pluginPaths);
 
                 var assemblies = pluginPaths.Select(p => Assembly.LoadFile(p));
+
+                pluginHandler.Load(assemblies);
+            }
+
+            if( options.PluginFiles != string.Empty)
+            {
+                //  We don't handle paths and files with space in them. Yet.
+                var pluginFiles = options.PluginFiles.Split(" ");
+                Output("Plugin files", () => pluginFiles);
+
+                var assemblies = pluginFiles.Select(p => Assembly.LoadFile(p));
 
                 pluginHandler.Load(assemblies);
             }
