@@ -37,7 +37,7 @@ namespace FilePlugin
             var xml = new XDocument(
                 new XElement("file", 
                     new XAttribute("name", filename),
-                    new XAttribute("path", path),
+                    new XAttribute("path", path ?? string.Empty),
                     new XAttribute("length", length),
                     new XAttribute("lastWriteTime", lastWriteTime)
                 )
