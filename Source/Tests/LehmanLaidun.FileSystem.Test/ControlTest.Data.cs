@@ -350,10 +350,10 @@ namespace LehmanLaidun.FileSystem.Test
                                 return
                                     firstElement.Name != "d" &&
                                     secondElement.Name != "d" &&
-                                    firstElement.Attribute("Name").Value ==
-                                    secondElement.Attribute("Name").Value &&
-                                    firstElement.Attribute("Size").Value !=
-                                    secondElement.Attribute("Size").Value;
+                                    firstElement.Attribute("Name")!.Value ==
+                                    secondElement.Attribute("Name")!.Value &&
+                                    firstElement.Attribute("Size")!.Value !=
+                                    secondElement.Attribute("Size")!.Value;
                             }
                         }
                     )   },
@@ -428,9 +428,9 @@ namespace LehmanLaidun.FileSystem.Test
                 new[]
                 {
                     Logic.Rule.Create("Any A",
-                        (e1, e2) => e1.Attribute("n").Value == "aa" && e2.Attribute("n").Value == "aa"),
+                        (e1, e2) => e1.Attribute("n")!.Value == "aa" && e2.Attribute("n")!.Value == "aa"),
                     Logic.Rule.Create("Any C",
-                        (e1, e2) => e1.Attribute("n").Value=="ca" && e2.Attribute("n").Value == "ca")
+                        (e1, e2) => e1.Attribute("n")!.Value=="ca" && e2.Attribute("n")!.Value == "ca")
                 },
                 new[] {
                 Similar.Create(

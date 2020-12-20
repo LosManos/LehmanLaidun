@@ -227,7 +227,7 @@ namespace LehmanLaidun.FileSystem.Test
             var res = sut.AsXDocument();
 
             //  #   Assert.
-            res.Root.Name.LocalName.Should().Be(rootName);
+            res.Root!.Name.LocalName.Should().Be(rootName);
         }
 
         #region Helper methods.
