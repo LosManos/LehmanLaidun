@@ -50,7 +50,7 @@ namespace LehmanLaidun.Console
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed(o => options = o);
 
-            Func<string> executingFolder = () => fileSystem.Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase!).LocalPath)!;
+            Func<string> executingFolder = () => fileSystem.Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().Location!).LocalPath)!;
             Func<string, string> rootedPath = (string path) => fileSystem.Path.GetFullPath(path)!;
             Func<string, string[]> pluginFolders = (string pluginPath) => fileSystem.Directory.GetDirectories(pluginPath);
 
