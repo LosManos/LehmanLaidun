@@ -1,0 +1,8 @@
+﻿<Manifest>
+  <ManifestVersion>1</ManifestVersion>
+  <Dependencies>
+      <Dependency>
+        <PathFile>C:\DATA\PROJEKT\LehmanLaidun\Source\Plugins\ImagePlugin\System.Drawing.Common.dll</PathFile>
+      </Dependency>
+    </Dependencies>
+</Manifest>

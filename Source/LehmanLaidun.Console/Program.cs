@@ -30,10 +30,7 @@ namespace LehmanLaidun.Console
         [Option("ox", HelpText = "Use to Output in Xml format.")]
         public bool OutputXml { get; set; }
 
-        [Option("pluginpath", HelpText = "Path of plugins. It looks for /PluginName/PluginName.dll")]
-        public string PluginPath { get; set; } = "";
-
-        [Option("pluginfiles", HelpText = "List of plugin dlls. Separated by space.")]
+        [Option("pluginfiles", HelpText = "List of plugin dlls. Separated by space. Each plugin dll must be accompanied by a manifest file.")]
         public string PluginFiles { get; set; } = "";
 
         [Option("verbose")]
@@ -57,9 +54,6 @@ namespace LehmanLaidun.Console
             if (options.Verbose)
             {
                 OutputOptions(options);
-                Output(
-                        ("PluginFolders", () => string.Join(',', pluginFolders(options.PluginPath)))
-                );
             }
 
             if (false == TryDirectoryExists(options.MyPath, out var myFilesRoot))
@@ -71,28 +65,36 @@ namespace LehmanLaidun.Console
 
             //  Below here we are allowed to touch the file system.
 
-            if(options.Verbose)
+            if (options.Verbose)
             {
-                Output("ExecutingFolder", executingFolder);
+                Output("ExecutingFolder", executingFolder, options.Verbose);
             }
 
-            if (options.PluginPath != string.Empty)
-            {
-                var pluginPaths = pluginFolders(options.PluginPath).Select(p => fileSystem.Path.Combine(rootedPath(p), fileSystem.DirectoryInfo.FromDirectoryName(p).Name + ".dll"));
-                Output("Plugins paths", () => pluginPaths);
-
-                var assemblies = pluginPaths.Select(p => Assembly.LoadFile(p));
-
-                pluginHandler.Load(assemblies);
-            }
-
-            if( options.PluginFiles != string.Empty)
+            //  Plugin files need a manifest.
+            if (options.PluginFiles != string.Empty)
             {
                 //  We don't handle paths and files with space in them. Yet.
                 var pluginFiles = options.PluginFiles.Split(" ");
-                Output("Plugin files", () => pluginFiles);
+                Output("Plugin files", () => pluginFiles, options.Verbose);
+                var rootedPluginFiles = pluginFiles.Select(pf => fileSystem.Path.GetFullPath(pf));
+                Output("Rooted plugin files", () => rootedPluginFiles, options.Verbose);
 
-                var assemblies = pluginFiles.Select(p => Assembly.LoadFile(p));
+                var plugins = rootedPluginFiles.Select(rpf => (
+                    RootedPath: fileSystem.Path.GetDirectoryName(rpf),
+                    PluginFileName: fileSystem.Path.GetFileName(rpf),
+                    ManifestFileName: fileSystem.Path.GetFileNameWithoutExtension(rpf) + ".plugin-manifest.xml"));
+                Output("Plugin info", () => plugins.Select(x => $"[{x.RootedPath},{x.PluginFileName},{x.ManifestFileName}]"), options.Verbose);
+
+                var manifestHandler = new ManifestHandler(fileSystem);
+                var assemblies = new List<Assembly>();
+                foreach (var plugin in plugins)
+                {
+                    var manifest = manifestHandler.Read(fileSystem.Path.Combine(plugin.RootedPath, plugin.ManifestFileName));
+                    LoadManifestFiles(manifest);
+
+                    var loadedPlugin = Assembly.LoadFile(fileSystem.Path.Combine(plugin.RootedPath, plugin.PluginFileName));
+                    assemblies.Add(loadedPlugin);
+                }
 
                 pluginHandler.Load(assemblies);
             }
@@ -125,30 +127,38 @@ namespace LehmanLaidun.Console
             return (int)ReturnValues.Success;
         }
 
+        private static void LoadManifestFiles(Manifest manifest)
+        {
+            foreach (var dependency in manifest.Dependencies)
+            {
+                Assembly.LoadFrom(dependency.PathFile);
+            }
+
+        }
+
         private static void OutputOptions(Options options)
         {
             C.WriteLine("Options:");
             C.WriteLine($"Path1:{options.MyPath}.");
             C.WriteLine($"Path2:{options.TheirPath}.");
             C.WriteLine($"OutputXml:{ options.OutputXml}.");
+            C.WriteLine($"PluginFles:{ options.PluginFiles}.");
         }
 
-        private static void Output(params (string key, Func<string> valueFunc)[] kvps)
+        private static void Output(string key, Func<IEnumerable<string>> valueFunc, bool @if = true)
         {
-            foreach (var kvp in kvps)
+            if (@if)
             {
-                Output(kvp.key, kvp.valueFunc);
+                Output(key, () => string.Join(',', valueFunc()));
             }
         }
 
-        private static void Output(string key, Func<IEnumerable<string>> valueFunc)
+        private static void Output(string key, Func<string> valueFunc, bool @if = true)
         {
-            Output(key, () => string.Join(',', valueFunc()));
-        }
-
-        private static void Output(string key, Func<string> valueFunc)
-        {
-            C.WriteLine($"{key}:{valueFunc()}");
+            if (@if)
+            {
+                C.WriteLine($"{key}:{valueFunc()}");
+            }
         }
 
         private static void OutputResult(XDocument files)
