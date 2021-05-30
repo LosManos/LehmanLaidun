@@ -5,6 +5,8 @@
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <AnalysisLevel>latest</AnalysisLevel>
+    <!--CopyLocalLockFileAssemblies is needed to copy all dependencies to the output folder.-->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,7 +18,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy $(TargetPath) $(ProjectDir)\$(TargetFileName)" />
+    <Exec Command="copy $(TargetPath) $(ProjectDir)\$(TargetFileName)&#xD;&#xA;copy $(TargetDir)runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll $(ProjectDir)\System.Drawing.Common.dll" />
   </Target>
 
 </Project>
