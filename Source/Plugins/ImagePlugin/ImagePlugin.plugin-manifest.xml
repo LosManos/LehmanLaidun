@@ -2,7 +2,7 @@
   <ManifestVersion>1</ManifestVersion>
   <Dependencies>
       <Dependency>
-        <PathFile>C:\DATA\PROJEKT\LehmanLaidun\Source\Plugins\ImagePlugin\System.Drawing.Common.dll</PathFile>
+        <PathFile>runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll</PathFile>
       </Dependency>
     </Dependencies>
 </Manifest>
