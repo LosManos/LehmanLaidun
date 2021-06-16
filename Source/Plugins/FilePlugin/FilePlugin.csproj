@@ -15,8 +15,4 @@
     <ProjectReference Include="..\..\LehmanLaidun.Plugin\LehmanLaidun.Plugin.csproj" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy $(TargetPath) $(ProjectDir)\$(TargetFileName)" />
-  </Target>
-
 </Project>

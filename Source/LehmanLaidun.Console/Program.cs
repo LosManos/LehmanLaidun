@@ -39,11 +39,12 @@ namespace LehmanLaidun.Console
 
     class Program
     {
-        static System.IO.Abstractions.FileSystem fileSystem = new System.IO.Abstractions.FileSystem();
+        private static System.IO.Abstractions.FileSystem fileSystem = new System.IO.Abstractions.FileSystem();
+
+        private static Options options = new Options();
 
         static int Main(string[] args)
         {
-            Options options = new Options();
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed(o => options = o);
 
@@ -90,7 +91,7 @@ namespace LehmanLaidun.Console
                 foreach (var plugin in plugins)
                 {
                     var manifest = manifestHandler.Read(fileSystem.Path.Combine(plugin.RootedPath, plugin.ManifestFileName));
-                    LoadManifestFiles(manifest);
+                    LoadManifestFiles(manifest, plugin.RootedPath);
 
                     var loadedPlugin = Assembly.LoadFile(fileSystem.Path.Combine(plugin.RootedPath, plugin.PluginFileName));
                     assemblies.Add(loadedPlugin);
@@ -127,13 +128,14 @@ namespace LehmanLaidun.Console
             return (int)ReturnValues.Success;
         }
 
-        private static void LoadManifestFiles(Manifest manifest)
+        private static void LoadManifestFiles(Manifest manifest, string path)
         {
             foreach (var dependency in manifest.Dependencies)
             {
-                Assembly.LoadFrom(dependency.PathFile);
+                var pathFile = fileSystem.Path.Combine(path, dependency.PathFile);
+                Output("Dependency pathFIle", () => pathFile, options.Verbose);
+                Assembly.LoadFrom(pathFile);
             }
-
         }
 
         private static void OutputOptions(Options options)
