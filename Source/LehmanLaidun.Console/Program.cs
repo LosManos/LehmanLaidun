@@ -136,7 +136,6 @@ namespace LehmanLaidun.Console
                 Output("Dependency pathFIle", () => pathFile, options.Verbose);
                 Assembly.LoadFrom(pathFile);
             }
-
         }
 
         private static void OutputOptions(Options options)
