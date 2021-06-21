@@ -90,10 +90,14 @@ namespace LehmanLaidun.Console
                 var assemblies = new List<Assembly>();
                 foreach (var plugin in plugins)
                 {
-                    var manifest = manifestHandler.Read(fileSystem.Path.Combine(plugin.RootedPath, plugin.ManifestFileName));
-                    LoadManifestFiles(manifest, plugin.RootedPath);
+                    var manifestPathfile = fileSystem.Path.Combine(plugin.RootedPath, plugin.ManifestFileName);
+                    if (fileSystem.File.Exists(manifestPathfile)) {
+                        var manifest = manifestHandler.Read(manifestPathfile);
+                        LoadManifestFiles(manifest, plugin.RootedPath);
+                    }
 
-                    var loadedPlugin = Assembly.LoadFile(fileSystem.Path.Combine(plugin.RootedPath, plugin.PluginFileName));
+                    var pluginPathfile = fileSystem.Path.Combine(plugin.RootedPath, plugin.PluginFileName);
+                    var loadedPlugin = Assembly.LoadFile(pluginPathfile);
                     assemblies.Add(loadedPlugin);
                 }
 
