@@ -12,4 +12,10 @@
     <ProjectReference Include="..\..\LehmanLaidun.Plugin\LehmanLaidun.Plugin.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="ExifPlugin.plugin-manifest.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

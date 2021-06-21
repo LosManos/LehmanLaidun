@@ -1,0 +1,8 @@
+﻿<Manifest>
+  <ManifestVersion>1</ManifestVersion>
+  <Dependencies>
+      <Dependency>
+        <PathFile>..\..\..\exiflib\1.7.0\lib\net20\ExifLib.dll</PathFile>
+      </Dependency>
+    </Dependencies>
+</Manifest>
