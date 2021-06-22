@@ -9,9 +9,13 @@ using CommandLine;
 using LehmanLaidun.FileSystem;
 using C = System.Console;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("LehmanLaidun.Console.Unit.Test")]
 namespace LehmanLaidun.Console
 {
-    enum ReturnValues
+    /// <summary>These are the return values.
+    /// The enum is internal only to make tests work.
+    /// </summary>
+    internal enum ReturnValues
     {
         Success = 0,
         NoInput = 1,
@@ -37,13 +41,21 @@ namespace LehmanLaidun.Console
         public bool Verbose { get; set; }
     }
 
-    class Program
+    /// <summary>This class is internal only to make unit tests work.
+    /// </summary>
+    internal class Program
     {
-        private static System.IO.Abstractions.FileSystem fileSystem = new System.IO.Abstractions.FileSystem();
+        /// <summary>This property is internal only to make unit tests work.
+        /// </summary>
+        internal static System.IO.Abstractions.IFileSystem fileSystem = new System.IO.Abstractions.FileSystem();
 
         private static Options options = new Options();
 
-        static int Main(string[] args)
+        /// <summary>This class is internal only to make tests work.
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        internal static int Main(string[] args)
         {
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed(o => options = o);
@@ -66,10 +78,7 @@ namespace LehmanLaidun.Console
 
             //  Below here we are allowed to touch the file system.
 
-            if (options.Verbose)
-            {
-                Output("ExecutingFolder", executingFolder, options.Verbose);
-            }
+            Output("ExecutingFolder", executingFolder, options.Verbose);
 
             //  Plugin files need a manifest.
             if (options.PluginFiles != string.Empty)
@@ -189,7 +198,7 @@ namespace LehmanLaidun.Console
 
         private static bool TryDirectoryExists(string possibleDirectory, out string? validDirectory)
         {
-            if (System.IO.Directory.Exists(possibleDirectory))
+            if (fileSystem.Directory.Exists(possibleDirectory))
             {
                 validDirectory = possibleDirectory;
                 return true;

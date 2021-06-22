@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Xml.Serialization;
 
 namespace LehmanLaidun.Console
 {
     internal class ManifestHandler
     {
-        private readonly System.IO.Abstractions.FileSystem fileSystem;
+        private readonly System.IO.Abstractions.IFileSystem fileSystem;
 
-        public ManifestHandler(System.IO.Abstractions.FileSystem fileSystem)
+        public ManifestHandler(System.IO.Abstractions.IFileSystem fileSystem)
         {
             this.fileSystem = fileSystem;
         }
