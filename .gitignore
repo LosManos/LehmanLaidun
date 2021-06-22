@@ -329,5 +329,9 @@ ASALocalRun/
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
 
+# Ncrunch
 **/Plugins/**/*.dll
 *.ncrunchproject
+
+# Exiflib
+*/Plugins/ExifPlugin/exiflib\*
