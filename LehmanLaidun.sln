@@ -47,6 +47,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExifPlugin", "Source\Plugin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LehmanLaidun.Console.Integration.Test", "Source\Tests\LehmanLaidun.Console.Integration.Test\LehmanLaidun.Console.Integration.Test.csproj", "{CAB4D00C-5839-4F84-99D6-EDC8DCB6C4D3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LehmanLaidun.Console.Unit.Test", "Source\Tests\LehmanLaidun.Console.Unit.Test\LehmanLaidun.Console.Unit.Test.csproj", "{234ABA44-42F3-4841-876F-7774F78D013E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,10 @@ Global
 		{CAB4D00C-5839-4F84-99D6-EDC8DCB6C4D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CAB4D00C-5839-4F84-99D6-EDC8DCB6C4D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CAB4D00C-5839-4F84-99D6-EDC8DCB6C4D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{234ABA44-42F3-4841-876F-7774F78D013E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{234ABA44-42F3-4841-876F-7774F78D013E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{234ABA44-42F3-4841-876F-7774F78D013E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{234ABA44-42F3-4841-876F-7774F78D013E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -115,6 +121,7 @@ Global
 		{33F7A4EB-C193-4175-B12E-84BE3DDFAD17} = {66CEDB12-773A-4C82-BC53-1A6BF0142A94}
 		{02AA9942-23EC-4074-9AA5-7005F8B0301F} = {33F7A4EB-C193-4175-B12E-84BE3DDFAD17}
 		{CAB4D00C-5839-4F84-99D6-EDC8DCB6C4D3} = {3212840E-B96D-4623-AD78-50563EBC6B75}
+		{234ABA44-42F3-4841-876F-7774F78D013E} = {3212840E-B96D-4623-AD78-50563EBC6B75}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C5C074B9-AF10-43AB-9C07-71C12F04EE09}
