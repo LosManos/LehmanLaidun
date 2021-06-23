@@ -1,3 +1,4 @@
+using CompulsoryCow.AssemblyAbstractions;
 using FluentAssertions;
 using LehmanLaidun.Plugin;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -24,6 +25,7 @@ namespace LehmanLaidun.FileSystem.Integration.Test
         [TestCategory("LocalOnly")]
         public void CanLoadAndExecute()
         {
+            var assemblyFactory = new AssemblyFactory();
             var plugins = new[] {
                 new {Name = "PluginOne", Framework = "netstandard2.0" },
                 new{Name = "PluginTwo", Framework = "net5.0"},
@@ -38,7 +40,7 @@ namespace LehmanLaidun.FileSystem.Integration.Test
                     plugin.Name + ".dll")
             );
 
-            var assemblies = pluginPathFiles.Select(pluginPathFile => Assembly.LoadFile(pluginPathFile));
+            var assemblies = pluginPathFiles.Select(pluginPathFile => assemblyFactory.LoadFile(pluginPathFile));
 
             var sut = PluginHandler.Create();
 

@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using CompulsoryCow.AssemblyAbstractions;
+using FluentAssertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
@@ -70,12 +71,14 @@ namespace MyPlugin
             }
         }
 
-        private static Assembly CreateAssembly(string sourceCode)
+        private static IAssembly CreateAssembly(string sourceCode)
         {
             var compiledAssembly = Compile(sourceCode);
             using (var asm = new MemoryStream(compiledAssembly))
             {
-                var assemblyLoadContext = new AssemblyLoadContext("Plugin", true);
+                var assemblyLoadContextFactory = new AssemblyLoadContextFactory();
+                var assemblyLoadContext = assemblyLoadContextFactory.Create("Plugin", true);
+                //var assemblyLoadContext = new AssemblyLoadContext("Plugin", true);
                 var assembly = assemblyLoadContext.LoadFromStream(asm);
                 return assembly;
             }
