@@ -1,6 +1,7 @@
 ﻿// Note: We should *not* use System.IO but instead System.IO.Abstractions;
 //using System.IO;
 using CommandLine;
+using CompulsoryCow.AssemblyAbstractions;
 using LehmanLaidun.FileSystem;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("LehmanLaidun.Console.Unit.Test")]
@@ -39,7 +40,17 @@ namespace LehmanLaidun.Console
     /// </summary>
     internal class Program
     {
-        private static Options options = new Options();
+        /// <summary>This method is internal only to make tests work.
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        internal static Options ParseArgs(string[] args)
+        {
+            Options options = new Options();
+            Parser.Default.ParseArguments<Options>(args)
+                .WithParsed(o => options = o);
+            return options;
+        }
 
         /// <summary>This class is internal only to make tests work.
         /// </summary>
@@ -47,15 +58,20 @@ namespace LehmanLaidun.Console
         /// <returns></returns>
         internal static int Main(string[] args)
         {
-            Parser.Default.ParseArguments<Options>(args)
-                .WithParsed(o => options = o);
+            if(args == null || args.Length == 0)
+            {
+                return (int)ReturnValues.NoInput;
+            }
+
+            var options = ParseArgs(args);
 
             var impl = new ProgramImpl(
-                options,
                 PluginHandler.Create(),
-                new System.IO.Abstractions.FileSystem());
+                new System.IO.Abstractions.FileSystem(),
+                new AssemblyFactory(),
+                Outputter.Create()); ;
 
-            var res = impl.Execute();
+            var res = impl.Execute(options);
 
             return (int)res;
         }

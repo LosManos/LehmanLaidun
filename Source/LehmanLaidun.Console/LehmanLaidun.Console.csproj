@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
+    <PackageReference Include="CompulsoryCow.AssemblyAbstractions" Version="0.6.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,5 @@
-﻿using LehmanLaidun.Plugin;
+﻿using CompulsoryCow.AssemblyAbstractions;
+using LehmanLaidun.Plugin;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace LehmanLaidun.FileSystem
     public interface IPluginHandler
     {
         IEnumerable<ParseResult> Execute(string pathfile);
-        void Load(IEnumerable<Assembly> assemblies);
+        void Load(IEnumerable<IAssembly> assemblies);
     }
 
     public class PluginHandler : IPluginHandler
@@ -23,7 +24,7 @@ namespace LehmanLaidun.FileSystem
             return new PluginHandler();
         }
 
-        public void Load(IEnumerable<Assembly> assemblies)
+        public void Load(IEnumerable<IAssembly> assemblies)
         {
             commands = assemblies.SelectMany(assembly => CreateCommands(assembly)).ToList();
         }
@@ -36,7 +37,7 @@ namespace LehmanLaidun.FileSystem
             }
         }
 
-        private static IEnumerable<ICommand> CreateCommands(Assembly assembly)
+        private static IEnumerable<ICommand> CreateCommands(IAssembly assembly)
         {
             var count = 0;
 

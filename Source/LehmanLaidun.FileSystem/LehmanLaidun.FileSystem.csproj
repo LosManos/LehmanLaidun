@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CompulsoryCow.AssemblyAbstractions" Version="0.5.0" />
     <PackageReference Include="System.IO.Abstractions" Version="13.2.38" />
     <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
   </ItemGroup>

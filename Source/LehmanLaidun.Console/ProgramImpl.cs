@@ -4,32 +4,35 @@ using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Reflection;
+//using System.Reflection;
 using System.Xml.Linq;
 using LehmanLaidun.FileSystem;
-using C = System.Console;
+using CompulsoryCow.AssemblyAbstractions;
 
 namespace LehmanLaidun.Console
 {
     internal class ProgramImpl
     {
-        private readonly PluginHandler pluginHandler;
+        private readonly IPluginHandler pluginHandler;
         private readonly IFileSystem fileSystem;
-        private readonly Options options;
+        private readonly IAssemblyFactory assemblyFactory;
+        private readonly IOutputter outputter;
 
         internal ProgramImpl(
-            Options options,
-            PluginHandler pluginHandler,
-            IFileSystem fileSystem)
+            IPluginHandler pluginHandler,
+            IFileSystem fileSystem,
+            IAssemblyFactory assemblyFactory,
+            IOutputter outputter)
         {
             this.pluginHandler = pluginHandler;
             this.fileSystem = fileSystem;
-            this.options = options;
+            this.assemblyFactory = assemblyFactory;
+            this.outputter = outputter;
         }
 
-        internal ReturnValues Execute()
+        internal ReturnValues Execute(Options options)
         {
-            Func<string> executingFolder = () => fileSystem.Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().Location!).LocalPath)!;
+            Func<string> executingFolder = () => fileSystem.Path.GetDirectoryName(new Uri(assemblyFactory.GetExecutingAssembly().Location!).LocalPath)!;
             Func<string, string> rootedPath = (string path) => fileSystem.Path.GetFullPath(path)!;
             Func<string, string[]> pluginFolders = (string pluginPath) => fileSystem.Directory.GetDirectories(pluginPath);
 
@@ -61,18 +64,18 @@ namespace LehmanLaidun.Console
                 Output("Plugin info", () => plugins.Select(x => $"[{x.RootedPath},{x.PluginFileName},{x.ManifestFileName}]"), options.Verbose);
 
                 var manifestHandler = new ManifestHandler(fileSystem);
-                var assemblies = new List<Assembly>();
+                var assemblies = new List<IAssembly>();
                 foreach (var plugin in plugins)
                 {
                     var manifestPathfile = fileSystem.Path.Combine(plugin.RootedPath, plugin.ManifestFileName);
                     if (fileSystem.File.Exists(manifestPathfile))
                     {
                         var manifest = manifestHandler.Read(manifestPathfile);
-                        LoadManifestFiles(manifest, plugin.RootedPath);
+                        LoadManifestFiles(manifest, plugin.RootedPath, options.Verbose);
                     }
 
                     var pluginPathfile = fileSystem.Path.Combine(plugin.RootedPath, plugin.PluginFileName);
-                    var loadedPlugin = Assembly.LoadFile(pluginPathfile);
+                    var loadedPlugin = assemblyFactory.LoadFile(pluginPathfile);
                     assemblies.Add(loadedPlugin);
                 }
 
@@ -85,7 +88,7 @@ namespace LehmanLaidun.Console
                     fileSystem,
                     myFilesRoot!,
                     pluginHandler).AsXDocument();
-                OutputResult(files);
+                OutputResult(files, outputter);
             }
             else
             {
@@ -94,26 +97,26 @@ namespace LehmanLaidun.Console
                     return ReturnValues.InvalidTheirsDirectory;
                 }
 
-                var myFiles = LogicFactory.CreateForPath(new System.IO.Abstractions.FileSystem(), myFilesRoot!, pluginHandler).AsXDocument();
-                var theirFiles = LogicFactory.CreateForPath(new System.IO.Abstractions.FileSystem(), theirFilesRoot!, pluginHandler).AsXDocument();
+                var myFiles = LogicFactory.CreateForPath(fileSystem, myFilesRoot!, pluginHandler).AsXDocument();
+                var theirFiles = LogicFactory.CreateForPath(fileSystem, theirFilesRoot!, pluginHandler).AsXDocument();
 
                 var differences = Logic.CompareXml(myFiles, theirFiles, new[] { "name", "length" });
 
                 //TODO:Make other output if differences.Result == true;
 
-                OutputResult(differences);
+                OutputResult(differences, outputter);
             }
 
             return ReturnValues.Success;
         }
 
-        private void LoadManifestFiles(Manifest manifest, string path)
+        private void LoadManifestFiles(Manifest manifest, string path, bool optionsVerbose)
         {
             foreach (var dependency in manifest.Dependencies)
             {
                 var pathFile = fileSystem.Path.Combine(path, dependency.PathFile);
-                Output("Dependency pathFIle", () => pathFile, options.Verbose);
-                Assembly.LoadFrom(pathFile);
+                Output("Dependency pathFIle", () => pathFile, optionsVerbose);
+                assemblyFactory.LoadFrom(pathFile);
             }
         }
 
@@ -128,47 +131,45 @@ namespace LehmanLaidun.Console
             return false;
         }
 
-        private static void Output(string key, Func<IEnumerable<string>> valueFunc, bool @if = true)
+        private void Output(string key, Func<IEnumerable<string>> valueFunc, bool @if = true)
+        {
+            Output(key, () => string.Join(',', valueFunc()), @if);
+        }
+
+        private void Output(string key, Func<string> valueFunc, bool @if = true)
         {
             if (@if)
             {
-                Output(key, () => string.Join(',', valueFunc()));
+                outputter.WriteLine($"{key}:{valueFunc()}");
             }
         }
 
-        private static void Output(string key, Func<string> valueFunc, bool @if = true)
+        private void OutputOptions(Options options)
         {
-            if (@if)
-            {
-                C.WriteLine($"{key}:{valueFunc()}");
-            }
+            outputter.WriteLine("Options:");
+            outputter.WriteLine($"Path1:{options.MyPath}.");
+            outputter.WriteLine($"Path2:{options.TheirPath}.");
+            outputter.WriteLine($"OutputXml:{ options.OutputXml}.");
+            outputter.WriteLine($"PluginFles:{ options.PluginFiles}.");
+            outputter.WriteLine($"Verbose:{ options.Verbose}.");
         }
 
-        private static void OutputOptions(Options options)
+        private void OutputResult(XDocument files, IOutputter outputter)
         {
-            C.WriteLine("Options:");
-            C.WriteLine($"Path1:{options.MyPath}.");
-            C.WriteLine($"Path2:{options.TheirPath}.");
-            C.WriteLine($"OutputXml:{ options.OutputXml}.");
-            C.WriteLine($"PluginFles:{ options.PluginFiles}.");
+            outputter.WriteLine(files.ToString());
         }
 
-        private static void OutputResult(XDocument files)
-        {
-            C.WriteLine(files.ToString());
-        }
-
-        private static void OutputResult((bool Result, IEnumerable<Difference> Differences) diff)
+        private static void OutputResult((bool Result, IEnumerable<Difference> Differences) diff, IOutputter outputter)
         {
             foreach (var d in diff.Differences)
             {
                 if (d.FirstXPath != null)
                 {
-                    C.WriteLine($"Found only in first:{d.FirstXPath}.");
+                    outputter.WriteLine($"Found only in first:{d.FirstXPath}.");
                 }
                 if (d.SecondXPath != null)
                 {
-                    C.WriteLine($"Found only in second:{d.SecondXPath}.");
+                    outputter.WriteLine($"Found only in second:{d.SecondXPath}.");
                 }
             }
         }
