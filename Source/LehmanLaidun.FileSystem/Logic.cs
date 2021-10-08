@@ -110,7 +110,7 @@ namespace LehmanLaidun.FileSystem
 
             //  Then recurse the directories.
             foreach (var directory
-                in _fileSystem.Directory.EnumerateDirectories(Path, "*", System.IO.SearchOption.AllDirectories))
+                in _fileSystem.Directory.EnumerateDirectories(Path + System.IO.Path.DirectorySeparatorChar, "*", System.IO.SearchOption.AllDirectories))
             {
                 foreach (var pathfile
                     in _fileSystem.Directory.EnumerateFiles(directory, "*", System.IO.SearchOption.TopDirectoryOnly))

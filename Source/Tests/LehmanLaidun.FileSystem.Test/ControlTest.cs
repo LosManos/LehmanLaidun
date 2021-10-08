@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
 
 namespace LehmanLaidun.FileSystem.Test
@@ -12,6 +13,10 @@ namespace LehmanLaidun.FileSystem.Test
     [TestClass]
     public partial class ControlTest
     {
+        private string Root = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? @"c:" :
+        RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "/c" :
+        throw new System.Exception($"Unkown operating sytem {RuntimeInformation.OSDescription}");
+
         [DataTestMethod]
         [DynamicData(nameof(CanCompareXml_ReturnEqualAndNoDifferenceForSameStructureTestData))]
         public void CanCompareXml_ReturnEqualAndNoDifferenceForSameStructure(string xml1, string xml2, IEnumerable<string> comparedAttributeKeys, string message)
@@ -77,6 +82,37 @@ namespace LehmanLaidun.FileSystem.Test
 
             //  #   Assert.
             res.Should().BeEquivalentTo(expecteds, message);
+        }
+
+        [TestMethod]
+        public void CanReturnFileInRoot()
+        {
+            var rootName = Logic.ElementNameRoot;
+            var files = new[]
+            {
+                new { pathfile = Path.Combine(Root, "whatever.jpg"), length = 4, lastAccessTime = DateTime.Parse("2010-01-05 11:22:33Z")  }
+            };
+
+            var mockedFileSystem = new MockFileSystem(
+                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length, pf.lastAccessTime)),
+                Root
+            );
+
+            var pluginHandler = PluginHandler.Create();
+
+            var sut = LogicFactory.CreateForPath(mockedFileSystem, Root, pluginHandler);
+
+            //  #   Act.
+            var res = sut.AsXDocument();
+
+            //  #   Assert.
+            res.Should().BeEquivalentTo(
+                XDocument.Parse(@$"
+<root path='{Root}'>
+  <directory name=''>
+    <file name='whatever.jpg'/>
+  </directory>
+</root>"));
         }
 
         [TestMethod]
