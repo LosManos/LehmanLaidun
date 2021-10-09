@@ -159,21 +159,21 @@ namespace LehmanLaidun.FileSystem.Test
             };
 
             var mockedFileSystem = new MockFileSystem(
-                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length, pf.lastAccessTime)), 
+                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length, pf.lastAccessTime)),
                 path
             );
 
             var pluginHandler = PluginHandler.Create();
 
-           var sut = LogicFactory.CreateForPath(mockedFileSystem, path, pluginHandler);
+            var sut = LogicFactory.CreateForPath(mockedFileSystem, path, pluginHandler);
 
             //  #   Act.
             var res = sut.AsEnumerableFiles();
 
             //  #   Assert.
             res.Select(f => (f.Name, f.Path)).Should().BeEquivalentTo(
-                files.Select(f => CreateFileItem(f.pathfile, f.length, f.lastAccessTime, pluginHandler))            
-                    .Select(f=> (f.Name, f.Path))
+                files.Select(f => CreateFileItem(f.pathfile, f.length, f.lastAccessTime, pluginHandler))
+                    .Select(f => (f.Name, f.Path))
                 );
         }
 
@@ -183,12 +183,12 @@ namespace LehmanLaidun.FileSystem.Test
             var path = Path.DirectorySeparatorChar + @"images";
             var files = new[]
             {
-                new { 
+                new {
                     pathfile = Path.Combine(path, "Vacation", "20180606-100404.jpg"), length = 15, lastAccessTime = CreateAsUtc("2010-01-16 11:16:33Z") },
             };
 
             var mockedFileSystem = new MockFileSystem(
-                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length, pf.lastAccessTime)), 
+                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length, pf.lastAccessTime)),
                 path
             );
 
@@ -217,7 +217,7 @@ namespace LehmanLaidun.FileSystem.Test
         [TestMethod]
         public void CanReturnXmlWihtBasicData()
         {
-            var path = Path.DirectorySeparatorChar +  "images";
+            var path = Path.DirectorySeparatorChar + "images";
             var files = new[]
             {
                 new { pathfile = Path.Combine(path, "Vacation", "20180606-100404.jpg"), length = 15, lastAccessTime = CreateAsUtc("2010-01-16 11:16:33Z") },
@@ -228,7 +228,7 @@ namespace LehmanLaidun.FileSystem.Test
             };
 
             var mockedFileSystem = new MockFileSystem(
-                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length, pf.lastAccessTime)), 
+                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length, pf.lastAccessTime)),
                 path
             );
 
@@ -284,7 +284,7 @@ namespace LehmanLaidun.FileSystem.Test
             };
 
             var mockedFileSystem = new MockFileSystem(
-                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length, pf.lastAccessTime)), 
+                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length, pf.lastAccessTime)),
                 path
             );
 
