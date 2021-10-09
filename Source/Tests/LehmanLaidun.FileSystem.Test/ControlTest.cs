@@ -115,6 +115,39 @@ namespace LehmanLaidun.FileSystem.Test
 </root>"));
         }
 
+
+        [TestMethod]
+        public void CanReturnFileInTopMostFolder()
+        {
+            var Path = System.IO.Path.Combine(Root, "Data");
+            var files = new[] {
+                new { pathfile = System.IO.Path.Combine( Path, "image2.jpg"),
+                    length = 12, lastAccessTime = DateTime.Parse("2010-01-13 11:22:33Z") },
+            };
+
+            var mockedFileSystem = new MockFileSystem(
+                files.ToDictionary(pf => pf.pathfile, pf => CreateMockFileData(pf.length, pf.lastAccessTime)),
+                Path
+            );
+
+            var pluginHandler = PluginHandler.Create();
+
+            var sut = LogicFactory.CreateForPath(mockedFileSystem, Path, pluginHandler);
+
+            //  #   Act.
+            var res = sut.AsXDocument();
+
+            //  #   Assert.
+            res.Should().BeEquivalentTo(
+                XDocument.Parse($@"
+<root path='{Path}'>
+    <directory name=''>
+        <file name='image2.jpg'/>
+    </directory>
+</root>
+"));
+        }
+
         [TestMethod]
         public void CanReturnListWithAllPropertiesSet()
         {

@@ -129,7 +129,7 @@ namespace LehmanLaidun.FileSystem
             foreach (var fileItem in AsEnumerableFiles())
             {
                 //  Remove the first part, the Path.
-                var relPath = fileItem.Path.Remove(0, Path.Length);
+                var relPath = fileItem.Path.Remove(0, Path.TrimEnd('\\').Length);
                 //  Split the path to a list of directory names.
                 var directoryNames = relPath.Trim(new[] { _fileSystem.Path.DirectorySeparatorChar }).Split(_fileSystem.Path.DirectorySeparatorChar);
                 var directoryElement = doc.Root;
