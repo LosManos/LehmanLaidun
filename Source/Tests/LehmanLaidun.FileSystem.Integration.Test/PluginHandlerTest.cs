@@ -28,7 +28,7 @@ namespace LehmanLaidun.FileSystem.Integration.Test
             var assemblyFactory = new AssemblyFactory();
             var plugins = new[] {
                 new {Name = "PluginOne", Framework = "netstandard2.0" },
-                new{Name = "PluginTwo", Framework = "net5.0"},
+                new{Name = "PluginTwo", Framework = "net6.0"},
             };
             var pluginPathFiles = plugins.Select(plugin =>
                 pathWrapper.Combine(
