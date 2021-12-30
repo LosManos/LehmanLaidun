@@ -32,6 +32,10 @@ namespace LehmanLaidun.Console
         [Option("pluginfiles", HelpText = "List of plugin dlls. Separated by space. Each plugin dll must be accompanied by a manifest file.")]
         public string PluginFiles { get; set; } = "";
 
+        [Option("processors", HelpText = "List of external console programs that can add information. Separated by space.")] // We don't yet handle spaces in path/filename.
+        public string Processors { get; set; } = "";
+
+        // TODO:OF:Can we get rid of explicit "verbose"? and the the built-in. If it exists? https://github.com/commandlineparser/commandline
         [Option("verbose")]
         public bool Verbose { get; set; }
     }

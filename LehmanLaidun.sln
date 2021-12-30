@@ -47,7 +47,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExifPlugin", "Source\Plugin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LehmanLaidun.Console.Integration.Test", "Source\Tests\LehmanLaidun.Console.Integration.Test\LehmanLaidun.Console.Integration.Test.csproj", "{CAB4D00C-5839-4F84-99D6-EDC8DCB6C4D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LehmanLaidun.Console.Unit.Test", "Source\Tests\LehmanLaidun.Console.Unit.Test\LehmanLaidun.Console.Unit.Test.csproj", "{234ABA44-42F3-4841-876F-7774F78D013E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LehmanLaidun.Console.Unit.Test", "Source\Tests\LehmanLaidun.Console.Unit.Test\LehmanLaidun.Console.Unit.Test.csproj", "{234ABA44-42F3-4841-876F-7774F78D013E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Processors", "Processors", "{DAFD3347-4301-41A5-BDBE-114F2ACD52E7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleProcessor", "Source\Processors\SimpleProcessor\SimpleProcessor.csproj", "{A2B753F0-671C-4313-9894-DABEC6C89370}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LehmanLaidun.Powershell", "Source\LehmanLaidun.Powershell\LehmanLaidun.Powershell.csproj", "{67F25735-B8B6-4802-8082-2E396EE9E5EE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -103,6 +109,14 @@ Global
 		{234ABA44-42F3-4841-876F-7774F78D013E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{234ABA44-42F3-4841-876F-7774F78D013E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{234ABA44-42F3-4841-876F-7774F78D013E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2B753F0-671C-4313-9894-DABEC6C89370}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2B753F0-671C-4313-9894-DABEC6C89370}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2B753F0-671C-4313-9894-DABEC6C89370}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2B753F0-671C-4313-9894-DABEC6C89370}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67F25735-B8B6-4802-8082-2E396EE9E5EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67F25735-B8B6-4802-8082-2E396EE9E5EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67F25735-B8B6-4802-8082-2E396EE9E5EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67F25735-B8B6-4802-8082-2E396EE9E5EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -122,6 +136,7 @@ Global
 		{02AA9942-23EC-4074-9AA5-7005F8B0301F} = {33F7A4EB-C193-4175-B12E-84BE3DDFAD17}
 		{CAB4D00C-5839-4F84-99D6-EDC8DCB6C4D3} = {3212840E-B96D-4623-AD78-50563EBC6B75}
 		{234ABA44-42F3-4841-876F-7774F78D013E} = {3212840E-B96D-4623-AD78-50563EBC6B75}
+		{A2B753F0-671C-4313-9894-DABEC6C89370} = {DAFD3347-4301-41A5-BDBE-114F2ACD52E7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C5C074B9-AF10-43AB-9C07-71C12F04EE09}

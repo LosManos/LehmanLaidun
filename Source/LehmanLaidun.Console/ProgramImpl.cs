@@ -8,6 +8,7 @@ using System.Linq;
 using System.Xml.Linq;
 using LehmanLaidun.FileSystem;
 using CompulsoryCow.AssemblyAbstractions;
+using System.Diagnostics;
 
 namespace LehmanLaidun.Console
 {
@@ -48,39 +49,39 @@ namespace LehmanLaidun.Console
 
             Output("ExecutingFolder", executingFolder, options.Verbose);
 
-            //  Plugin files need a manifest.
-            if (options.PluginFiles != string.Empty)
-            {
-                //  We don't handle paths and files with space in them. Yet.
-                var pluginFiles = options.PluginFiles.Split(" ");
-                Output("Plugin files", () => pluginFiles, options.Verbose);
-                var rootedPluginFiles = pluginFiles.Select(pf => fileSystem.Path.GetFullPath(pf));
-                Output("Rooted plugin files", () => rootedPluginFiles, options.Verbose);
+            ////  Plugin files need a manifest.
+            //if (options.PluginFiles != string.Empty)
+            //{
+            //    //  We don't handle paths and files with space in them. Yet.
+            //    var pluginFiles = options.PluginFiles.Split(" ");
+            //    Output("Plugin files", () => pluginFiles, options.Verbose);
+            //    var rootedPluginFiles = pluginFiles.Select(pf => fileSystem.Path.GetFullPath(pf));
+            //    Output("Rooted plugin files", () => rootedPluginFiles, options.Verbose);
 
-                var plugins = rootedPluginFiles.Select(rpf => (
-                    RootedPath: fileSystem.Path.GetDirectoryName(rpf),
-                    PluginFileName: fileSystem.Path.GetFileName(rpf),
-                    ManifestFileName: fileSystem.Path.GetFileNameWithoutExtension(rpf) + ".plugin-manifest.xml"));
-                Output("Plugin info", () => plugins.Select(x => $"[{x.RootedPath},{x.PluginFileName},{x.ManifestFileName}]"), options.Verbose);
+            //    var plugins = rootedPluginFiles.Select(rpf => (
+            //        RootedPath: fileSystem.Path.GetDirectoryName(rpf),
+            //        PluginFileName: fileSystem.Path.GetFileName(rpf),
+            //        ManifestFileName: fileSystem.Path.GetFileNameWithoutExtension(rpf) + ".plugin-manifest.xml"));
+            //    Output("Plugin info", () => plugins.Select(x => $"[{x.RootedPath},{x.PluginFileName},{x.ManifestFileName}]"), options.Verbose);
 
-                var manifestHandler = new ManifestHandler(fileSystem);
-                var assemblies = new List<IAssembly>();
-                foreach (var plugin in plugins)
-                {
-                    var manifestPathfile = fileSystem.Path.Combine(plugin.RootedPath, plugin.ManifestFileName);
-                    if (fileSystem.File.Exists(manifestPathfile))
-                    {
-                        var manifest = manifestHandler.Read(manifestPathfile);
-                        LoadManifestFiles(manifest, plugin.RootedPath, options.Verbose);
-                    }
+            //    var manifestHandler = new ManifestHandler(fileSystem);
+            //    var assemblies = new List<IAssembly>();
+            //    foreach (var plugin in plugins)
+            //    {
+            //        var manifestPathfile = fileSystem.Path.Combine(plugin.RootedPath, plugin.ManifestFileName);
+            //        if (fileSystem.File.Exists(manifestPathfile))
+            //        {
+            //            var manifest = manifestHandler.Read(manifestPathfile);
+            //            LoadManifestFiles(manifest, plugin.RootedPath, options.Verbose);
+            //        }
 
-                    var pluginPathfile = fileSystem.Path.Combine(plugin.RootedPath, plugin.PluginFileName);
-                    var loadedPlugin = assemblyFactory.LoadFile(pluginPathfile);
-                    assemblies.Add(loadedPlugin);
-                }
+            //        var pluginPathfile = fileSystem.Path.Combine(plugin.RootedPath, plugin.PluginFileName);
+            //        var loadedPlugin = assemblyFactory.LoadFile(pluginPathfile);
+            //        assemblies.Add(loadedPlugin);
+            //    }
 
-                pluginHandler.Load(assemblies);
-            }
+            //    pluginHandler.Load(assemblies);
+            //}
 
             if (options.TheirPath == "")
             {
@@ -88,6 +89,27 @@ namespace LehmanLaidun.Console
                     fileSystem,
                     myFilesRoot!,
                     pluginHandler).AsXDocument();
+
+                if (options.Processors != string.Empty)
+                {
+                    //  We don't handle paths and files with space in them. Yet.
+                    var processorFiles = options.Processors.Split(" ");
+                    Output("Processor files", () => processorFiles, options.Verbose);
+                    var rootedProcessorFiles = processorFiles.Select(pf => fileSystem.Path.GetFullPath(pf));
+                    Output("Rooted processor files", () => rootedProcessorFiles, options.Verbose);
+
+                    var processors = rootedProcessorFiles.Select(rpf => (
+                        RootedPath: fileSystem.Path.GetDirectoryName(rpf),
+                        PluginFileName: fileSystem.Path.GetFileName(rpf)));
+                    Output("Processors info", () => processors.Select(x => $"[{x.RootedPath},{x.PluginFileName}]"), options.Verbose);
+
+                    foreach (var processor in processors)
+                    {
+                        // TODO:OF:Execute.
+                        ExecuteProcessor(processor, files, options);
+                    }
+                }
+
                 OutputResult(files, outputter);
             }
             else
@@ -108,6 +130,111 @@ namespace LehmanLaidun.Console
             }
 
             return ReturnValues.Success;
+        }
+
+        private static XElement ShallowClone( XElement source)
+        {
+            var target = new XElement(source.Name);
+            foreach ( var attribute in source.Attributes())
+            {
+                target.Add(new XAttribute(attribute));
+            }
+            return target;
+        }
+
+        private static IEnumerable<XDocument> AllFiles(XDocument sourceDocument)
+        {
+            foreach (var dir in sourceDocument.Root?.Nodes() ?? Enumerable.Empty<XNode>()) // TODO:OF:Remove ?? as we should know we have contents.
+            {
+                var dirElement = (XElement)dir;
+                var dirPath = dirElement.Attribute("path");
+                foreach (var fileNode in dirElement.Nodes() ?? new XElement[0])
+                {
+                    var targetRootElement = ShallowClone(sourceDocument.Root!);
+                    var targetFileElement = ShallowClone((XElement)fileNode);
+                    targetRootElement.Add(targetFileElement);
+
+                    var xdoc = new XDocument(targetRootElement);
+                    yield return xdoc;
+                }
+            }
+        }
+
+        private static string Quote(string txt)
+        {
+            // Ugly trick to replace " and \. It with not work as soon as the path or filename contains the constants.
+            const string QuoteToken = "[QUOTE]";
+            const string BackslashToken = "[BACKSLASH]";
+            const string Quote = "\"";
+            const string Backslash = "\\";
+            const string BackslashQuote = Backslash + Quote;
+            const string BackslashX2 = Backslash + Backslash;
+
+            var a = txt.Replace(Quote, QuoteToken);
+            var b = a.Replace(Backslash, BackslashToken);
+            return Quote +
+                b.Replace(QuoteToken, BackslashQuote).Replace(BackslashToken, BackslashX2) +
+                Quote;
+        }
+
+        private string ExecuteExe((string RootedPath, string PluginFileName) processor, Options options, string argument)
+        {
+            var process = new Process();
+            process.StartInfo.FileName = fileSystem.Path.Combine(processor.RootedPath, processor.PluginFileName);
+            process.StartInfo.Arguments = Quote(argument);
+
+            process.StartInfo.CreateNoWindow = false;
+            process.StartInfo.UseShellExecute = false;
+
+            //process.StartInfo.RedirectStandardInput = true;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardError = true;
+
+            // Just Console.WriteLine it.
+            process.ErrorDataReceived += ErrorDataReceived;
+
+            Output("Processor", () => $"Starting {processor}", options.Verbose);
+
+            process.Start();
+
+            process.BeginErrorReadLine();
+
+            string result;
+            try
+            {
+                result = process.StandardOutput.ReadToEnd() ?? string.Empty;
+            }
+            finally
+            {
+                if (process.HasExited == false)
+                    process.Kill();
+            }
+
+            Output("Success", () => result);
+
+            return result;
+
+            void ErrorDataReceived(object sender, DataReceivedEventArgs e)
+            {
+                //  By some reason I have yet to grasp this event handler is called with `e.Datat==null`
+                //  when a line feecd andor carriage return is called. Not an error.
+                if (e?.Data is not null)
+                {
+                    Output("Processor, error", () => "* " + nameof(ErrorDataReceived));
+                    Output("Processor, error, sender", () => sender?.ToString() ?? string.Empty);
+                    Output("Processor, error, data", () => e.Data?.ToString() ?? string.Empty);
+                }
+            }
+        }
+
+        private void ExecuteProcessor((string RootedPath, string PluginFileName) processor, XDocument filesDocument, Options options)
+        {
+            var files = AllFiles(filesDocument);
+
+            foreach( var file in files)
+            {
+                ExecuteExe(processor, options, file.ToString());
+            }
         }
 
         private void LoadManifestFiles(Manifest manifest, string path, bool optionsVerbose)
