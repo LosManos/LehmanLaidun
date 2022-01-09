@@ -146,16 +146,18 @@ namespace LehmanLaidun.Console
         {
             foreach (var dir in sourceDocument.Root?.Nodes() ?? Enumerable.Empty<XNode>()) // TODO:OF:Remove ?? as we should know we have contents.
             {
-                var dirElement = (XElement)dir;
-                var dirPath = dirElement.Attribute("path");
-                foreach (var fileNode in dirElement.Nodes() ?? new XElement[0])
+                var sourceDirElement = (XElement)dir;
+                var dirPath = sourceDirElement.Attribute("path");
+                foreach (var fileNode in sourceDirElement.Nodes() ?? new XElement[0])
                 {
                     var targetRootElement = ShallowClone(sourceDocument.Root!);
+                    var targetDirElement = ShallowClone(sourceDirElement);
+                    targetRootElement.Add(targetDirElement);
                     var targetFileElement = ShallowClone((XElement)fileNode);
                     targetRootElement.Add(targetFileElement);
 
                     var xdoc = new XDocument(targetRootElement);
-                    yield return (DocumentToExport: xdoc, OriginalElement: dirElement);
+                     yield return (DocumentToExport: xdoc, OriginalElement: (XElement)fileNode);
                 }
             }
         }
@@ -233,7 +235,15 @@ namespace LehmanLaidun.Console
 
             foreach (var export in exports)
             {
-                ExecuteExe(processor, options, export.DocumentToExport.ToString());
+                var result = ExecuteExe(processor, options, export.DocumentToExport.ToString());
+                Output("Result", () => "[" + result + "]", options.Verbose);
+
+                var resultDocument = XDocument.Parse(result);
+                var exportedFileElement = resultDocument.Root.Element("file");
+                foreach(var attribute in exportedFileElement.Attributes())
+                {
+                    export.OriginalElement.Add(attribute);
+                }
             }
         }
 
