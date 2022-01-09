@@ -85,7 +85,7 @@ namespace LehmanLaidun.Console
 
             if (options.TheirPath == "")
             {
-                var files = LogicFactory.CreateForPath(
+                var filesDocument = LogicFactory.CreateForPath(
                     fileSystem,
                     myFilesRoot!,
                     pluginHandler).AsXDocument();
@@ -106,11 +106,11 @@ namespace LehmanLaidun.Console
                     foreach (var processor in processors)
                     {
                         // TODO:OF:Execute.
-                        ExecuteProcessor(processor, files, options);
+                        ExecuteProcessor(processor, filesDocument, options);
                     }
                 }
 
-                OutputResult(files, outputter);
+                OutputResult(filesDocument, outputter);
             }
             else
             {
@@ -132,17 +132,17 @@ namespace LehmanLaidun.Console
             return ReturnValues.Success;
         }
 
-        private static XElement ShallowClone( XElement source)
+        private static XElement ShallowClone(XElement source)
         {
             var target = new XElement(source.Name);
-            foreach ( var attribute in source.Attributes())
+            foreach (var attribute in source.Attributes())
             {
                 target.Add(new XAttribute(attribute));
             }
             return target;
         }
 
-        private static IEnumerable<XDocument> AllFiles(XDocument sourceDocument)
+        private static IEnumerable<(XDocument DocumentToExport, XElement OriginalElement)> AllFiles(XDocument sourceDocument)
         {
             foreach (var dir in sourceDocument.Root?.Nodes() ?? Enumerable.Empty<XNode>()) // TODO:OF:Remove ?? as we should know we have contents.
             {
@@ -155,7 +155,7 @@ namespace LehmanLaidun.Console
                     targetRootElement.Add(targetFileElement);
 
                     var xdoc = new XDocument(targetRootElement);
-                    yield return xdoc;
+                    yield return (DocumentToExport: xdoc, OriginalElement: dirElement);
                 }
             }
         }
@@ -229,11 +229,11 @@ namespace LehmanLaidun.Console
 
         private void ExecuteProcessor((string RootedPath, string PluginFileName) processor, XDocument filesDocument, Options options)
         {
-            var files = AllFiles(filesDocument);
+            var exports = AllFiles(filesDocument);
 
-            foreach( var file in files)
+            foreach (var export in exports)
             {
-                ExecuteExe(processor, options, file.ToString());
+                ExecuteExe(processor, options, export.DocumentToExport.ToString());
             }
         }
 
