@@ -132,16 +132,6 @@ namespace LehmanLaidun.Console
             return ReturnValues.Success;
         }
 
-        private static XElement ShallowClone(XElement source)
-        {
-            var target = new XElement(source.Name);
-            foreach (var attribute in source.Attributes())
-            {
-                target.Add(new XAttribute(attribute));
-            }
-            return target;
-        }
-
         private static IEnumerable<(XDocument DocumentToExport, XElement OriginalElement)> AllFiles(XDocument sourceDocument)
         {
             foreach (var dir in sourceDocument.Root?.Nodes() ?? Enumerable.Empty<XNode>()) // TODO:OF:Remove ?? as we should know we have contents.
@@ -160,23 +150,6 @@ namespace LehmanLaidun.Console
                      yield return (DocumentToExport: xdoc, OriginalElement: (XElement)fileNode);
                 }
             }
-        }
-
-        private static string Quote(string txt)
-        {
-            // Ugly trick to replace " and \. It with not work as soon as the path or filename contains the constants.
-            const string QuoteToken = "[QUOTE]";
-            const string BackslashToken = "[BACKSLASH]";
-            const string Quote = "\"";
-            const string Backslash = "\\";
-            const string BackslashQuote = Backslash + Quote;
-            const string BackslashX2 = Backslash + Backslash;
-
-            var a = txt.Replace(Quote, QuoteToken);
-            var b = a.Replace(Backslash, BackslashToken);
-            return Quote +
-                b.Replace(QuoteToken, BackslashQuote).Replace(BackslashToken, BackslashX2) +
-                Quote;
         }
 
         private string ExecuteExe((string RootedPath, string PluginFileName) processor, Options options, string argument)
@@ -218,8 +191,8 @@ namespace LehmanLaidun.Console
 
             void ErrorDataReceived(object sender, DataReceivedEventArgs e)
             {
-                //  By some reason I have yet to grasp this event handler is called with `e.Datat==null`
-                //  when a line feecd andor carriage return is called. Not an error.
+                //  By some reason I have yet to grasp this event handler is called with `e.Data==null`
+                //  when a line feed andor carriage return is called. Not an error.
                 if (e?.Data is not null)
                 {
                     Output("Processor, error", () => "* " + nameof(ErrorDataReceived));
@@ -239,11 +212,8 @@ namespace LehmanLaidun.Console
                 Output("Result", () => "[" + result + "]", options.Verbose);
 
                 var resultDocument = XDocument.Parse(result);
-                var exportedFileElement = resultDocument.Root.Element("file");
-                foreach(var attribute in exportedFileElement.Attributes())
-                {
-                    export.OriginalElement.Add(attribute);
-                }
+                var exportedFileElement = resultDocument.Root.FirstNode;
+                export.OriginalElement.Add(exportedFileElement);
             }
         }
 
@@ -255,17 +225,6 @@ namespace LehmanLaidun.Console
                 Output("Dependency pathFIle", () => pathFile, optionsVerbose);
                 assemblyFactory.LoadFrom(pathFile);
             }
-        }
-
-        private bool TryDirectoryExists(string possibleDirectory, out string? validDirectory)
-        {
-            if (fileSystem.Directory.Exists(possibleDirectory))
-            {
-                validDirectory = possibleDirectory;
-                return true;
-            }
-            validDirectory = null;
-            return false;
         }
 
         private void Output(string key, Func<IEnumerable<string>> valueFunc, bool @if = true)
@@ -310,5 +269,44 @@ namespace LehmanLaidun.Console
                 }
             }
         }
+
+        private static string Quote(string txt)
+        {
+            // Ugly trick to replace " and \. It with not work as soon as the path or filename contains the constants.
+            const string QuoteToken = "[QUOTE]";
+            const string BackslashToken = "[BACKSLASH]";
+            const string Quote = "\"";
+            const string Backslash = "\\";
+            const string BackslashQuote = Backslash + Quote;
+            const string BackslashX2 = Backslash + Backslash;
+
+            var a = txt.Replace(Quote, QuoteToken);
+            var b = a.Replace(Backslash, BackslashToken);
+            return Quote +
+                b.Replace(QuoteToken, BackslashQuote).Replace(BackslashToken, BackslashX2) +
+                Quote;
+        }
+
+        private static XElement ShallowClone(XElement source)
+        {
+            var target = new XElement(source.Name);
+            foreach (var attribute in source.Attributes())
+            {
+                target.Add(new XAttribute(attribute));
+            }
+            return target;
+        }
+
+        private bool TryDirectoryExists(string possibleDirectory, out string? validDirectory)
+        {
+            if (fileSystem.Directory.Exists(possibleDirectory))
+            {
+                validDirectory = possibleDirectory;
+                return true;
+            }
+            validDirectory = null;
+            return false;
+        }
+
     }
 }
