@@ -21,7 +21,7 @@ namespace LehmanLaidun.FileSystem
         internal static FileItem Create(
             IFileSystem fileSystem, 
             string pathFile, 
-            IPluginHandler pluginHandler)
+            IPluginHandler? pluginHandler)
         {
             // There is a problem with `GetDirectoryName` as it cuts the drive name if there is no directory or file.
             // That should not be a problem here though as we always get a file.

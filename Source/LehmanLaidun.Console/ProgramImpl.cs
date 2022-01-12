@@ -14,20 +14,20 @@ namespace LehmanLaidun.Console
 {
     internal class ProgramImpl
     {
-        private readonly IPluginHandler pluginHandler;
+        private readonly IPluginHandler? pluginHandler;
         private readonly IFileSystem fileSystem;
-        private readonly IAssemblyFactory assemblyFactory;
+        private readonly IAssemblyFactory? assemblyFactory;
         private readonly IOutputter outputter;
 
         internal ProgramImpl(
-            IPluginHandler pluginHandler,
+            //IPluginHandler pluginHandler,
             IFileSystem fileSystem,
-            IAssemblyFactory assemblyFactory,
+            //IAssemblyFactory assemblyFactory,
             IOutputter outputter)
         {
-            this.pluginHandler = pluginHandler;
+            //this.pluginHandler = pluginHandler;
             this.fileSystem = fileSystem;
-            this.assemblyFactory = assemblyFactory;
+            //this.assemblyFactory = assemblyFactory;
             this.outputter = outputter;
         }
 
@@ -87,8 +87,8 @@ namespace LehmanLaidun.Console
             {
                 var filesDocument = LogicFactory.CreateForPath(
                     fileSystem,
-                    myFilesRoot!,
-                    pluginHandler).AsXDocument();
+                    myFilesRoot!
+                    /*pluginHandler*/).AsXDocument();
 
                 if (options.Processors != string.Empty)
                 {
@@ -105,7 +105,6 @@ namespace LehmanLaidun.Console
 
                     foreach (var processor in processors)
                     {
-                        // TODO:OF:Execute.
                         ExecuteProcessor(processor, filesDocument, options);
                     }
                 }
@@ -119,8 +118,8 @@ namespace LehmanLaidun.Console
                     return ReturnValues.InvalidTheirsDirectory;
                 }
 
-                var myFiles = LogicFactory.CreateForPath(fileSystem, myFilesRoot!, pluginHandler).AsXDocument();
-                var theirFiles = LogicFactory.CreateForPath(fileSystem, theirFilesRoot!, pluginHandler).AsXDocument();
+                var myFiles = LogicFactory.CreateForPath(fileSystem, myFilesRoot!/*, pluginHandler*/).AsXDocument();
+                var theirFiles = LogicFactory.CreateForPath(fileSystem, theirFilesRoot! /*pluginHandler*/).AsXDocument();
 
                 var differences = Logic.CompareXml(myFiles, theirFiles, new[] { "name", "length" });
 

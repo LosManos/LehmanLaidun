@@ -40,7 +40,7 @@ namespace LehmanLaidun.FileSystem
 
         private readonly IFileSystem _fileSystem;
 
-        private readonly IPluginHandler _pluginHandler;
+        private readonly IPluginHandler? _pluginHandler; // TODO:OF:Remove
 
         public string Path { get; }
 
@@ -77,9 +77,9 @@ namespace LehmanLaidun.FileSystem
         /// <param name="path"></param>
         /// <param name="pluginHandler"></param>
         /// <returns></returns>
-        internal static Logic Create(IFileSystem fileSystem, string path, IPluginHandler pluginHandler)
+        internal static Logic Create(IFileSystem fileSystem, string path/*, IPluginHandler pluginHandler*/)
         {
-            return new Logic(fileSystem, path, pluginHandler);
+            return new Logic(fileSystem, path/*, pluginHandler*/);
         }
 
         /// <summary>This constructor takes all parameters needed to fully populate the object.
@@ -87,10 +87,10 @@ namespace LehmanLaidun.FileSystem
         /// <param name="fileSystem"></param>
         /// <param name="path"></param>
         /// <param name="pluginHandler"></param>
-        private Logic(IFileSystem fileSystem, string path, IPluginHandler pluginHandler)
+        private Logic(IFileSystem fileSystem, string path/*, IPluginHandler pluginHandler*/)
         {
             _fileSystem = fileSystem;
-            _pluginHandler = pluginHandler;
+            //_pluginHandler = pluginHandler;
             Path = path;
         }
 
@@ -156,8 +156,8 @@ namespace LehmanLaidun.FileSystem
         /// <param name="comparedAttributeKeys"></param>
         /// <returns></returns>
         public static (bool Result, IEnumerable<Difference> Differences) CompareXml(
-            XDocument xml1, 
-            XDocument xml2, 
+            XDocument xml1,
+            XDocument xml2,
             IEnumerable<string> comparedAttributeKeys)
         {
             if (comparedAttributeKeys is null)
@@ -221,8 +221,8 @@ namespace LehmanLaidun.FileSystem
         #region Private helper methods.
 
         private static IEnumerable<Difference> Compare(
-            XElement firstElement, 
-            XElement secondElement, 
+            XElement firstElement,
+            XElement secondElement,
             IEnumerable<string> comparedAttributeKeys,
             FoundOnlyIn foundOnlyIn)
         {
@@ -282,8 +282,8 @@ namespace LehmanLaidun.FileSystem
                     .Parents()
                     .Reverse()
                     .Select(e => e.Name.LocalName + (
-                        e == root ? 
-                            string.Empty : 
+                        e == root ?
+                            string.Empty :
                             GetXPathOf(e.Attributes(), comparedAttributeKeys)
                         )
                     )
@@ -328,13 +328,13 @@ namespace LehmanLaidun.FileSystem
             }
 
             // There should not be any attribute.
-            if ( comparedAttributeKeys.Any()  && comparedAttributeKeys.First() == "&")
+            if (comparedAttributeKeys.Any() && comparedAttributeKeys.First() == "&")
             {
                 return "[not(@*)]";
             }
 
             // There are no attributes in the element so there is nothing to compare.
-            if( attributes.Any() == false)
+            if (attributes.Any() == false)
             {
                 return string.Empty;
             }

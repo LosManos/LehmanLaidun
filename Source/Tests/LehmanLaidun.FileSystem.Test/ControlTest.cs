@@ -100,7 +100,7 @@ namespace LehmanLaidun.FileSystem.Test
 
             var pluginHandler = PluginHandler.Create();
 
-            var sut = LogicFactory.CreateForPath(mockedFileSystem, Root, pluginHandler);
+            var sut = LogicFactory.CreateForPath(mockedFileSystem, Root/*, pluginHandler*/);
 
             //  #   Act.
             var res = sut.AsXDocument();
@@ -132,7 +132,7 @@ namespace LehmanLaidun.FileSystem.Test
 
             var pluginHandler = PluginHandler.Create();
 
-            var sut = LogicFactory.CreateForPath(mockedFileSystem, Path, pluginHandler);
+            var sut = LogicFactory.CreateForPath(mockedFileSystem, Path/*, pluginHandler*/);
 
             //  #   Act.
             var res = sut.AsXDocument();
@@ -165,7 +165,7 @@ namespace LehmanLaidun.FileSystem.Test
 
             var pluginHandler = PluginHandler.Create();
 
-            var sut = LogicFactory.CreateForPath(mockedFileSystem, path, pluginHandler);
+            var sut = LogicFactory.CreateForPath(mockedFileSystem, path/*, pluginHandler*/);
 
             //  #   Act.
             var res = sut.AsEnumerableFiles();
@@ -194,7 +194,7 @@ namespace LehmanLaidun.FileSystem.Test
 
             var pluginHandler = PluginHandler.Create();
 
-            var sut = LogicFactory.CreateForPath(mockedFileSystem, path, pluginHandler);
+            var sut = LogicFactory.CreateForPath(mockedFileSystem, path/*, pluginHandler*/);
 
             //  #   Act.
             var res = sut.AsXDocument();
@@ -234,7 +234,7 @@ namespace LehmanLaidun.FileSystem.Test
 
             var pluginHandler = PluginHandler.Create();
 
-            var sut = LogicFactory.CreateForPath(mockedFileSystem, path, pluginHandler);
+            var sut = LogicFactory.CreateForPath(mockedFileSystem, path/*, pluginHandler*/);
 
             //  #   Act.
             var res = sut.AsXDocument();
@@ -290,7 +290,7 @@ namespace LehmanLaidun.FileSystem.Test
 
             var pluginHandler = PluginHandler.Create();
 
-            var sut = LogicFactory.CreateForPath(mockedFileSystem, path, pluginHandler);
+            var sut = LogicFactory.CreateForPath(mockedFileSystem, path/*, pluginHandler*/);
 
             //  #   Act.
             var res = sut.AsXDocument();

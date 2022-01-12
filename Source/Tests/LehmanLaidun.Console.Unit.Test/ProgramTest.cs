@@ -38,9 +38,9 @@ namespace LehmanLaidun.Console.Unit.Test
                 (Root, "mydata", "a file", "file content")
             );
             var sut = new ProgramImpl(
-                SetupPlugins().Object,
+                //SetupPlugins().Object,
                 fileSystem,
-                new AssemblyFactory(),
+                //new AssemblyFactory(),
                 SetupOutputter(out _).Object
             );
 
@@ -62,9 +62,9 @@ namespace LehmanLaidun.Console.Unit.Test
             );
 
             var sut = new ProgramImpl(
-                SetupPlugins().Object,
+                //SetupPlugins().Object,
                 mockedFileSystem,
-                new AssemblyFactory(),
+                //new AssemblyFactory(),
                 SetupOutputter(out List<string> outputs).Object
             );
 
@@ -92,9 +92,9 @@ namespace LehmanLaidun.Console.Unit.Test
             );
 
             var sut = new ProgramImpl(
-                SetupPlugins().Object,
+                //SetupPlugins().Object,
                 mockedFileSystem,
-                new AssemblyFactory(),
+                //new AssemblyFactory(),
                 SetupOutputter(out List<string> outputs).Object
             );
 
@@ -123,9 +123,9 @@ namespace LehmanLaidun.Console.Unit.Test
             );
 
             var sut = new ProgramImpl(
-                SetupPlugins().Object,
+                //SetupPlugins().Object,
                 mockedFileSystem,
-                new AssemblyFactory(),
+                //new AssemblyFactory(),
                 SetupOutputter(out _).Object
             );
 
@@ -141,34 +141,16 @@ namespace LehmanLaidun.Console.Unit.Test
         }
 
         [TestMethod]
-        public void ShouldLoadPluginFile()
+        public void ShouldExecuteProcessorFile()
         {
             var file = new FakeFile(Root, "mypath", "myfile", "file content");
-            var pluginFile = new FakeFile(Root, "", "plugin.dll", "file content");
-            var manifestFile = new FakeFile(Root, "", "plugin.plugin-manifest.xml",
-@"<Manifest>
-  <ManifestVersion>1</ManifestVersion>
-    <Dependencies>
-    </Dependencies>
-</Manifest>");
-            const string MockAssemblyFullname = "MyFullName";
-
-            var mockAssembly = new Mock<IAssembly>(MockBehavior.Strict);
-            mockAssembly.Setup(m => m.FullName)
-                    .Returns(MockAssemblyFullname);
-            var mockPluginHandler = SetupPlugins(mockAssembly);
+            var processorFile = new FakeFile(Root, "", "processor.exe", "file content");
 
             var sut = new ProgramImpl(
-                mockPluginHandler.Object,
                 SetupFilesystem(
                     file,
-                    pluginFile,
-                    manifestFile
+                    processorFile
                 ),
-                SetupAssembly(
-                    pluginFile.PathFile,
-                    mockAssembly
-                    ).Object,
                 SetupOutputter(out _).Object
             );
 
@@ -176,12 +158,11 @@ namespace LehmanLaidun.Console.Unit.Test
             var res = sut.Execute(new Options
             {
                 MyPath = System.IO.Path.Combine(Root, file.Path),
-                PluginFiles = pluginFile.PathFile,
+                PluginFiles = processorFile.PathFile,
             });
 
             //  Assert.
             res.Should().Be(ReturnValues.Success);
-            mockPluginHandler.Verify(m => m.Load(It.Is<List<IAssembly>>(a => a.Single().FullName == MockAssemblyFullname)), Times.Once);
         }
 
         private class FakeFile

@@ -70,9 +70,9 @@ namespace LehmanLaidun.Console
             var options = ParseArgs(args);
 
             var impl = new ProgramImpl(
-                PluginHandler.Create(),
+                //PluginHandler.Create(),
                 new System.IO.Abstractions.FileSystem(),
-                new AssemblyFactory(),
+                //new AssemblyFactory(),
                 Outputter.Create()); ;
 
             var res = impl.Execute(options);
