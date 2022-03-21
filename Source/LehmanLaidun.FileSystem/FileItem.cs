@@ -9,9 +9,9 @@ namespace LehmanLaidun.FileSystem
     {
         public string Name { get; }
         public string Path { get; }
-        public IEnumerable<ParseResult> Data { get; private set; }
+        public IEnumerable<ParseResult>? Data { get; private set; }
 
-        private FileItem(string path, string name, IEnumerable<ParseResult> parseResults) //, long length, DateTime lastWriteTime)
+        private FileItem(string path, string name, IEnumerable<ParseResult>? parseResults) //, long length, DateTime lastWriteTime)
         {
             Path = path;
             Name = name;
@@ -40,9 +40,9 @@ namespace LehmanLaidun.FileSystem
             //// so we change it to UTC to alway have... UTC.
             //var lastWriteTime = fileSystem.File.GetLastWriteTime(pathFile).ToUniversalTime();
 
-            var results = pluginHandler.Execute(pathFile);
+            //var results = pluginHandler.Execute(pathFile);
 
-            return new FileItem(path, filename, results); //, length, lastWriteTime);
+            return new FileItem(path, filename, null/*results*/); //, length, lastWriteTime);
         }
 
         public override bool Equals(object obj)

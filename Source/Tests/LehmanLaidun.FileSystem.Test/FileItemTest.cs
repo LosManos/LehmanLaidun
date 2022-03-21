@@ -36,7 +36,7 @@ namespace LehmanLaidun.FileSystem.Test
             //  #   Assert.
             res.Path.Should().Be(path);
             res.Name.Should().Be(filename);
-            res.Data.Any().Should().BeFalse();
+            res.Data?.Any().Should().BeFalse();
         }
 	}
 }

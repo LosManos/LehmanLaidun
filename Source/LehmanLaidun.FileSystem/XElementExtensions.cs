@@ -50,7 +50,7 @@ namespace LehmanLaidun.FileSystem
                 Logic.ElementNameFile,
                 new XAttribute(Logic.AttributeNameName, fileItem.Name)
             );
-            if (fileItem.Data.Any())
+            if (fileItem.Data?.Any() ?? false)
             {
                 var dataElement = new XElement("data");
                 foreach (var parseResult in fileItem.Data)

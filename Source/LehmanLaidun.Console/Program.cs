@@ -30,6 +30,7 @@ namespace LehmanLaidun.Console
         public bool OutputXml { get; set; }
 
         [Option("pluginfiles", HelpText = "List of plugin dlls. Separated by space. Each plugin dll must be accompanied by a manifest file.")]
+        [System.Obsolete("TODO:OF:Remove")]
         public string PluginFiles { get; set; } = "";
 
         [Option("processors", HelpText = "List of external console programs that can add information. Separated by space.")] // We don't yet handle spaces in path/filename.

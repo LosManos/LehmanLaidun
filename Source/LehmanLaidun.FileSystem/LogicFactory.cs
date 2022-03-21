@@ -14,7 +14,7 @@ namespace LehmanLaidun.FileSystem
         /// <param name="path">Any path, rooted or not.</param>
         /// <param name="pluginHandler">A handler for plugins.</param>
         /// <returns></returns>
-        public static Logic CreateForPath(IFileSystem fileSystem, string path/*, IPluginHandler pluginHandler*/)
+        public static Logic CreateForPath(IFileSystem fileSystem, string path, IPluginHandler? pluginHandler)
         {
             return Logic.Create(fileSystem, path/*, pluginHandler*/);
         }

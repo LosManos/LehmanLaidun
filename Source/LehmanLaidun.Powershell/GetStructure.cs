@@ -23,8 +23,8 @@ public class GetStructure : PSCmdlet
 
         var files = LogicFactory.CreateForPath(
             new System.IO.Abstractions.FileSystem(),
-            MyPath
-            /*PluginHandler.Create()*/);
+            MyPath,
+            null/*PluginHandler.Create()*/);
 
         var xmlDocument = new XmlDocument();
         xmlDocument.LoadXml(files.AsXDocument().ToString());

@@ -33,7 +33,7 @@ namespace LehmanLaidun.Console
 
         internal ReturnValues Execute(Options options)
         {
-            Func<string> executingFolder = () => fileSystem.Path.GetDirectoryName(new Uri(assemblyFactory.GetExecutingAssembly().Location!).LocalPath)!;
+            //Func<string> executingFolder = () => fileSystem.Path.GetDirectoryName(new Uri(assemblyFactory.GetExecutingAssembly().Location!).LocalPath)!;
             Func<string, string> rootedPath = (string path) => fileSystem.Path.GetFullPath(path)!;
             Func<string, string[]> pluginFolders = (string pluginPath) => fileSystem.Directory.GetDirectories(pluginPath);
 
@@ -47,7 +47,7 @@ namespace LehmanLaidun.Console
                 return ReturnValues.InvalidMyDirectory;
             }
 
-            Output("ExecutingFolder", executingFolder, options.Verbose);
+            //Output("ExecutingFolder", executingFolder, options.Verbose);
 
             ////  Plugin files need a manifest.
             //if (options.PluginFiles != string.Empty)
@@ -87,8 +87,8 @@ namespace LehmanLaidun.Console
             {
                 var filesDocument = LogicFactory.CreateForPath(
                     fileSystem,
-                    myFilesRoot!
-                    /*pluginHandler*/).AsXDocument();
+                    myFilesRoot!,
+                    null/*pluginHandler*/).AsXDocument();
 
                 if (options.Processors != string.Empty)
                 {
@@ -118,8 +118,8 @@ namespace LehmanLaidun.Console
                     return ReturnValues.InvalidTheirsDirectory;
                 }
 
-                var myFiles = LogicFactory.CreateForPath(fileSystem, myFilesRoot!/*, pluginHandler*/).AsXDocument();
-                var theirFiles = LogicFactory.CreateForPath(fileSystem, theirFilesRoot! /*pluginHandler*/).AsXDocument();
+                var myFiles = LogicFactory.CreateForPath(fileSystem, myFilesRoot!, null/*, pluginHandler*/).AsXDocument();
+                var theirFiles = LogicFactory.CreateForPath(fileSystem, theirFilesRoot!, null /*pluginHandler*/).AsXDocument();
 
                 var differences = Logic.CompareXml(myFiles, theirFiles, new[] { "name", "length" });
 

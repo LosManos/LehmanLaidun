@@ -158,11 +158,14 @@ namespace LehmanLaidun.Console.Unit.Test
             var res = sut.Execute(new Options
             {
                 MyPath = System.IO.Path.Combine(Root, file.Path),
-                PluginFiles = processorFile.PathFile,
+                //PluginFiles = processorFile.PathFile,
+                Processors = processorFile.PathFile
             });
 
             //  Assert.
             res.Should().Be(ReturnValues.Success);
+
+            false.Should().BeTrue("TODO:OF:TBA");
         }
 
         private class FakeFile
